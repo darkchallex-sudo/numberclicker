@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Clicker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="stage" id="stage">
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+    <div class="ambient ambient-c"></div>
+
+    <button id="backpackButton" class="backpack-button" type="button" aria-expanded="false" aria-controls="backpackPanel">
+        <span class="backpack-icon" aria-hidden="true">[+]</span>
+        <span>Backpack</span>
+    </button>
+
+    <aside id="backpackPanel" class="backpack-panel hidden" aria-hidden="true">
+        <div class="panel-header">
+            <div>
+                <p class="panel-kicker">Luck Boosters</p>
+                <h2>Backpack</h2>
+            </div>
+            <button id="closeBackpackButton" class="close-panel" type="button" aria-label="Close backpack">X</button>
+        </div>
+        <div class="panel-stats">
+            <article class="panel-stat">
+                <span>Coins</span>
+                <strong id="coinValue">0</strong>
+            </article>
+            <article class="panel-stat">
+                <span>Total Luck</span>
+                <strong id="luckValue">0</strong>
+            </article>
+            <article class="panel-stat">
+                <span>Last Roll</span>
+                <strong id="lastRollValue">0</strong>
+            </article>
+            <article class="panel-stat">
+                <span>Best Roll</span>
+                <strong id="bestRollValue">0</strong>
+            </article>
+            <article class="panel-stat">
+                <span>Active Timer</span>
+                <strong id="activeTimerValue">None</strong>
+            </article>
+            <article class="panel-stat">
+                <span>Active Booster</span>
+                <strong id="activeBoosterValue">None</strong>
+            </article>
+            <article class="panel-stat">
+                <span>Total Rolls</span>
+                <strong id="totalRollsValue">0</strong>
+            </article>
+            <article class="panel-stat">
+                <span>Best Find</span>
+                <strong id="bestFindValue">None</strong>
+            </article>
+        </div>
+        <p class="panel-note">You earn 5 coins every 20 clicks. Luck is added to every roll.</p>
+        <div class="find-panel">
+            <p class="find-label">Latest Find</p>
+            <h3 id="latestFindValue">None yet</h3>
+            <p id="latestFindMeta" class="find-meta">Roll to discover one of 5,000 possible finds.</p>
+        </div>
+        <div id="boosterList" class="booster-list"></div>
+    </aside>
+
+    <section class="core">
+        <p class="hint">Click the button. Chase the impossible.</p>
+        <div class="number-wrap">
+            <span class="number-label">Number</span>
+            <h1 id="numberValue">0</h1>
+        </div>
+        <button id="clickButton" class="click-button" type="button">Generate Number</button>
+        <p id="saveText" class="save-text">Checking save status...</p>
+        <p id="microText" class="micro-text">120 achievements exist. Some of them will wake up the screen.</p>
+        <p id="findText" class="micro-text">Current best find: None</p>
+    </section>
+
+    <section id="toastHost" class="toast-host" aria-live="polite" aria-label="Achievement notifications"></section>
+
+    <section id="cutsceneOverlay" class="cutscene-overlay hidden" aria-hidden="true">
+        <div class="cutscene-blackout"></div>
+        <div class="cutscene-backdrop"></div>
+        <div class="cutscene-smear"></div>
+        <div class="cutscene-burst burst-a"></div>
+        <div class="cutscene-burst burst-b"></div>
+        <div class="cutscene-rings">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="cutscene-panel">
+            <p class="cutscene-kicker">Milestone Cutscene</p>
+            <h2 id="cutsceneTitle">Awakened</h2>
+            <p id="cutsceneSubtitle" class="cutscene-subtitle"></p>
+        </div>
+    </section>
+</main>
+
+<template id="boosterTemplate">
+    <article class="booster-card">
+        <div>
+            <h3 class="booster-name"></h3>
+            <p class="booster-description"></p>
+        </div>
+        <div class="booster-actions">
+            <span class="booster-owned"></span>
+            <button class="booster-buy" type="button">Buy</button>
+        </div>
+    </article>
+</template>
+
+<script src="script.js"></script>
+</body>
+</html>
