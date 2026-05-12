@@ -255,6 +255,19 @@ body {
     background: rgba(0, 0, 0, 0.32);
 }
 
+.spotify-open-link {
+    display: grid;
+    place-items: center;
+    min-height: 74px;
+    padding: 14px;
+    border-radius: 12px;
+    color: #07140c;
+    background: linear-gradient(180deg, #eaffdf, #71e38f 46%, #23834a);
+    font-weight: 900;
+    text-decoration: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.64), 0 10px 22px rgba(0, 0, 0, 0.24);
+}
+
 .spotify-song-list {
     display: grid;
     gap: 10px;
@@ -626,8 +639,12 @@ body {
 }
 
 .luck-spin-button:disabled {
-    cursor: wait;
+    cursor: not-allowed;
     filter: saturate(0.8) brightness(0.82);
+}
+
+.luck-spin-button.is-spinning:disabled {
+    cursor: wait;
 }
 
 .luck-machine-note {
