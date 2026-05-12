@@ -2,6 +2,7 @@
     "use strict";
 
     var SAVE_KEY = "number-clicker-engine-v3";
+    var SPOTIFY_LIBRARY_KEY = "number-clicker-spotify-songs-v1";
     var TOTAL_ACHIEVEMENTS = 120;
 
     var NUMBER_MILESTONES = [
@@ -128,21 +129,34 @@
             maxPurchases: 999999,
             description: "Adds +18,000 luck for 3 clicks."
         }
-    ];
+    ].concat(createQuadPotions());
 
     var CUTSCENE_MILESTONES = [
-        { value: 10000, title: "Neon Surge", subtitle: "The screen bends for the first real threshold." },
-        { value: 50000, title: "Sky Splitter", subtitle: "Color pressure starts tearing through the calm." },
-        { value: 100000, title: "Velocity Crown", subtitle: "Your clicks stop feeling local." },
-        { value: 500000, title: "Solar Tremor", subtitle: "The atmosphere gives up and starts glowing." },
-        { value: 1000000, title: "Radiant Collapse", subtitle: "A million numbers is enough to distort the room." },
-        { value: 5000000, title: "Prism Rift", subtitle: "Everything picks a brighter color and stays there." },
-        { value: 10000000, title: "Aurora Engine", subtitle: "The game finally looks like it knows your name." },
-        { value: 50000000, title: "Celestial Overdrive", subtitle: "This is no longer a button. It is an event." },
-        { value: 100000000, title: "Chromatic Tempest", subtitle: "Pure saturation. Pure noise. Pure momentum." },
-        { value: 500000000, title: "Thunder Bloom", subtitle: "The cutscene has stopped asking for permission." },
-        { value: 1000000000, title: "Apex Corona", subtitle: "You reached the billion line and the world noticed." },
-        { value: 5000000000, title: "Absolute Zenith", subtitle: "This is the top end of the cutscene ladder." }
+        { value: 10000, title: "Neon Surge", subtitle: "The screen bends for the first real threshold.", theme: "neon", durationMs: 7600 },
+        { value: 50000, title: "Sky Splitter", subtitle: "Color pressure starts tearing through the calm.", theme: "neon", durationMs: 7600 },
+        { value: 100000, title: "Velocity Crown", subtitle: "Your clicks stop feeling local.", theme: "neon", durationMs: 7800 },
+        { value: 500000, title: "Solar Tremor", subtitle: "The atmosphere gives up and starts glowing.", theme: "solar", durationMs: 7800 },
+        { value: 1000000, title: "Radiant Collapse", subtitle: "A million numbers is enough to distort the room.", theme: "solar", durationMs: 8000 },
+        { value: 5000000, title: "Prism Rift", subtitle: "Everything picks a brighter color and stays there.", theme: "solar", durationMs: 8200 },
+        { value: 10000000, title: "Aurora Engine", subtitle: "The game finally looks like it knows your name.", theme: "cosmic", durationMs: 8400 },
+        { value: 50000000, title: "Celestial Overdrive", subtitle: "This is no longer a button. It is an event.", theme: "cosmic", durationMs: 8600 },
+        { value: 100000000, title: "Chromatic Tempest", subtitle: "Pure saturation. Pure noise. Pure momentum.", theme: "cosmic", durationMs: 9000 },
+        { value: 500000000, title: "Thunder Bloom", subtitle: "The cutscene has stopped asking for permission.", theme: "apex", durationMs: 9800 },
+        { value: 1000000000, title: "Apex Corona", subtitle: "You reached the billion line and the world noticed.", theme: "apex", durationMs: 11000 },
+        { value: 5000000000, title: "Absolute Zenith", subtitle: "Five billion does not arrive. It tears the sky open.", theme: "apex", mode: "finale", durationMs: 50000 }
+    ];
+    var DEFAULT_CUTSCENE_DURATION_MS = 7600;
+    var FINALE_CUTSCENE_STEPS = [
+        { at: 1200, phase: "Power Build", line: "The room goes empty. The count keeps climbing." },
+        { at: 5600, phase: "Pressure Layer", line: "Every smaller milestone folds underneath this one." },
+        { at: 10200, phase: "Orbit Break", line: "Numbers peel across the screen like shrapnel." },
+        { at: 14800, phase: "Crown Ignition", line: "The apex theme finally earns its name." },
+        { at: 19600, phase: "White Heat", line: "The center burns bright enough to erase the edges." },
+        { at: 24400, phase: "Silence Drop", line: "Then everything cuts down to black again." },
+        { at: 29200, phase: "Return Signal", line: "A thin gold pulse crawls back into the void." },
+        { at: 34000, phase: "Zenith Rise", line: "Five billion stands up in full view." },
+        { at: 39400, phase: "Final Lock", line: "No shortcut. No cheap flash. Just earned scale." },
+        { at: 44600, phase: "Absolute Zenith", line: "You made the ladder end in something worthy of the climb." }
     ];
 
     var NUMBER_NAMES = [
@@ -270,6 +284,26 @@
         }
     }
 
+    function createQuadPotions() {
+        return [
+            { id: "quad-potion-1", name: "Split Sip I", cost: 18, luck: 2, rollsPerClick: 4, durationClicks: 4, singleUse: false, permanent: false, unlockRolls: 12, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 4 clicks." },
+            { id: "quad-potion-2", name: "Split Sip II", cost: 36, luck: 2, rollsPerClick: 4, durationClicks: 6, singleUse: false, permanent: false, unlockRolls: 24, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 6 clicks." },
+            { id: "quad-potion-3", name: "Split Sip III", cost: 54, luck: 2, rollsPerClick: 4, durationClicks: 8, singleUse: false, permanent: false, unlockRolls: 48, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 8 clicks." },
+            { id: "quad-potion-4", name: "Echo Flask I", cost: 80, luck: 2, rollsPerClick: 4, durationClicks: 10, singleUse: false, permanent: false, unlockRolls: 80, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 10 clicks." },
+            { id: "quad-potion-5", name: "Echo Flask II", cost: 110, luck: 2, rollsPerClick: 4, durationClicks: 12, singleUse: false, permanent: false, unlockRolls: 130, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 12 clicks." },
+            { id: "quad-potion-6", name: "Echo Flask III", cost: 150, luck: 2, rollsPerClick: 4, durationClicks: 15, singleUse: false, permanent: false, unlockRolls: 190, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 15 clicks." },
+            { id: "quad-potion-7", name: "Mirror Draft I", cost: 210, luck: 2, rollsPerClick: 4, durationClicks: 18, singleUse: false, permanent: false, unlockRolls: 260, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 18 clicks." },
+            { id: "quad-potion-8", name: "Mirror Draft II", cost: 300, luck: 2, rollsPerClick: 4, durationClicks: 22, singleUse: false, permanent: false, unlockRolls: 360, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 22 clicks." },
+            { id: "quad-potion-9", name: "Mirror Draft III", cost: 420, luck: 2, rollsPerClick: 4, durationClicks: 26, singleUse: false, permanent: false, unlockRolls: 500, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 26 clicks." },
+            { id: "quad-potion-10", name: "Prism Dose I", cost: 620, luck: 2, rollsPerClick: 4, durationClicks: 30, singleUse: false, permanent: false, unlockRolls: 700, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 30 clicks." },
+            { id: "quad-potion-11", name: "Prism Dose II", cost: 900, luck: 2, rollsPerClick: 4, durationClicks: 36, singleUse: false, permanent: false, unlockRolls: 980, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 36 clicks." },
+            { id: "quad-potion-12", name: "Prism Dose III", cost: 1300, luck: 2, rollsPerClick: 4, durationClicks: 42, singleUse: false, permanent: false, unlockRolls: 1350, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 42 clicks." },
+            { id: "quad-potion-13", name: "Zen Vein I", cost: 1900, luck: 2, rollsPerClick: 4, durationClicks: 50, singleUse: false, permanent: false, unlockRolls: 1850, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 50 clicks." },
+            { id: "quad-potion-14", name: "Zen Vein II", cost: 2800, luck: 2, rollsPerClick: 4, durationClicks: 60, singleUse: false, permanent: false, unlockRolls: 2450, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 60 clicks." },
+            { id: "quad-potion-15", name: "Zen Vein III", cost: 4200, luck: 2, rollsPerClick: 4, durationClicks: 72, singleUse: false, permanent: false, unlockRolls: 3200, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 72 clicks." }
+        ];
+    }
+
     function createDefaultState() {
         return {
             number: 0,
@@ -284,9 +318,7 @@
             totalRolls: 0,
             latestFindId: "",
             bestFindId: "",
-            activeBoostId: "",
-            activeLuck: 0,
-            activeBoostRemaining: 0,
+            activeBoosts: [],
             sessionStartAt: 0,
             recentHighRollTimestamps: [],
             highRollStreakWindow: 0,
@@ -342,9 +374,7 @@
                 totalRolls: typeof parsed.totalRolls === "number" ? parsed.totalRolls : fallback.totalRolls,
                 latestFindId: typeof parsed.latestFindId === "string" ? parsed.latestFindId : fallback.latestFindId,
                 bestFindId: typeof parsed.bestFindId === "string" ? parsed.bestFindId : fallback.bestFindId,
-                activeBoostId: typeof parsed.activeBoostId === "string" ? parsed.activeBoostId : fallback.activeBoostId,
-                activeLuck: typeof parsed.activeLuck === "number" ? parsed.activeLuck : fallback.activeLuck,
-                activeBoostRemaining: typeof parsed.activeBoostRemaining === "number" ? parsed.activeBoostRemaining : fallback.activeBoostRemaining,
+                activeBoosts: Array.isArray(parsed.activeBoosts) ? parsed.activeBoosts : fallback.activeBoosts,
                 sessionStartAt: typeof parsed.sessionStartAt === "number" ? parsed.sessionStartAt : fallback.sessionStartAt,
                 recentHighRollTimestamps: Array.isArray(parsed.recentHighRollTimestamps) ? parsed.recentHighRollTimestamps : [],
                 highRollStreakWindow: typeof parsed.highRollStreakWindow === "number" ? parsed.highRollStreakWindow : fallback.highRollStreakWindow,
@@ -454,7 +484,8 @@
         this.listeners = {
             update: [],
             toast: [],
-            cutscene: []
+            cutscene: [],
+            luckSpin: []
         };
         this.lastSaveSucceeded = false;
         this.ensureBoosterShape();
@@ -463,6 +494,7 @@
 
     NumberEngine.prototype.ensureBoosterShape = function () {
         var index;
+        var activeBoosts = [];
         for (index = 0; index < BOOSTERS.length; index += 1) {
             if (typeof this.state.ownedBoosters[BOOSTERS[index].id] !== "number") {
                 this.state.ownedBoosters[BOOSTERS[index].id] = 0;
@@ -471,6 +503,19 @@
                 this.state.usedSingleUseBoosters[BOOSTERS[index].id] = false;
             }
         }
+        for (index = 0; index < this.state.activeBoosts.length; index += 1) {
+            if (this.state.activeBoosts[index] &&
+                typeof this.state.activeBoosts[index].id === "string" &&
+                typeof this.state.activeBoosts[index].luck === "number" &&
+                typeof this.state.activeBoosts[index].remaining === "number" &&
+                this.state.activeBoosts[index].remaining > 0) {
+                if (typeof this.state.activeBoosts[index].rollsPerClick !== "number" || this.state.activeBoosts[index].rollsPerClick < 1) {
+                    this.state.activeBoosts[index].rollsPerClick = 1;
+                }
+                activeBoosts.push(this.state.activeBoosts[index]);
+            }
+        }
+        this.state.activeBoosts = activeBoosts;
     };
 
     NumberEngine.prototype.on = function (eventName, listener) {
@@ -490,25 +535,46 @@
 
     NumberEngine.prototype.click = function () {
         var previousCoinBlocks = Math.floor(this.state.totalClicks / CLICKS_PER_COIN_BLOCK);
+        var rollCount;
+        var highestBaseRoll = 0;
+        var highestRoll = 0;
+        var highRollHits = 0;
+        var rollIndex;
         var baseRoll;
+        var totalLuck;
         if (this.state.sessionStartAt === 0) {
             this.state.sessionStartAt = Date.now();
         }
         this.state.totalClicks += 1;
         this.state.number += this.state.clickPower;
         this.state.backgroundHue = (this.state.backgroundHue + 19) % 360;
-        this.state.totalRolls += 1;
-        baseRoll = this.randomInt(1, 10000);
-        if (baseRoll > this.state.bestBaseRoll) {
-            this.state.bestBaseRoll = baseRoll;
+        rollCount = this.getRollsPerClick();
+        totalLuck = this.getTotalLuck();
+
+        for (rollIndex = 0; rollIndex < rollCount; rollIndex += 1) {
+            this.state.totalRolls += 1;
+            baseRoll = this.randomInt(1, 10000);
+            if (baseRoll > highestBaseRoll) {
+                highestBaseRoll = baseRoll;
+            }
+            if (baseRoll + totalLuck > highestRoll) {
+                highestRoll = baseRoll + totalLuck;
+            }
+            if (baseRoll + totalLuck >= 9000) {
+                highRollHits += 1;
+            }
         }
-        this.state.lastRoll = baseRoll + this.getTotalLuck();
-        if (this.state.lastRoll > this.state.bestRoll) {
-            this.state.bestRoll = this.state.lastRoll;
+
+        if (highestBaseRoll > this.state.bestBaseRoll) {
+            this.state.bestBaseRoll = highestBaseRoll;
+        }
+        this.state.lastRoll = highestRoll;
+        if (highestRoll > this.state.bestRoll) {
+            this.state.bestRoll = highestRoll;
         }
         this.resolveFind();
-        this.updateHighRollWindow();
-        if (this.state.activeBoostId === "void-tonic" && this.state.lastRoll >= 10000) {
+        this.updateHighRollWindow(highRollHits);
+        if (this.hasActiveBoost("void-tonic") && highestRoll >= 10000) {
             this.state.voidTonicSuccess = true;
         }
         this.consumeActiveBoostCharge();
@@ -525,10 +591,13 @@
         return Math.floor(Math.random() * (max - min + 1)) + min;
     };
 
-    NumberEngine.prototype.updateHighRollWindow = function () {
+    NumberEngine.prototype.updateHighRollWindow = function (highRollHits) {
         var now = Date.now();
-        if (this.state.lastRoll >= 9000) {
-            this.state.recentHighRollTimestamps.push(now);
+        var index;
+        if (highRollHits > 0) {
+            for (index = 0; index < highRollHits; index += 1) {
+                this.state.recentHighRollTimestamps.push(now);
+            }
         }
         this.state.recentHighRollTimestamps = this.filterRecent(this.state.recentHighRollTimestamps, ONE_MINUTE_MS, now);
         this.state.highRollStreakWindow = this.state.recentHighRollTimestamps.length;
@@ -588,38 +657,86 @@
             name: booster.name,
             description: booster.permanent
                 ? "Permanent luck increased by " + safeFormatNumber(booster.luck) + "."
-                : "Activated for " + safeFormatNumber(booster.durationClicks) + " click" + (booster.durationClicks === 1 ? "" : "s") + "."
+                : "Activated for " + safeFormatNumber(booster.durationClicks) + " click" + (booster.durationClicks === 1 ? "" : "s") + (booster.rollsPerClick > 1 ? " with " + safeFormatNumber(booster.rollsPerClick) + " rolls per press." : ".")
+        });
+        this.emit("update", this.getSnapshot());
+    };
+
+    NumberEngine.prototype.spinLuckMachine = function () {
+        var value = this.randomInt(0, 999);
+        var positive = this.randomInt(0, 1) === 1;
+        var delta = positive ? value : -value;
+
+        this.state.coins += 1000;
+        this.state.permanentLuck += delta;
+        this.lastSaveSucceeded = this.storage.save(this.state);
+        this.emit("luckSpin", {
+            value: value,
+            delta: delta,
+            positive: positive
+        });
+        this.emit("toast", {
+            name: positive ? "Green Machine Hit" : "Red Machine Hit",
+            description: (positive ? "+" : "-") + safeFormatNumber(value) + " permanent luck. 1,000 coins added."
         });
         this.emit("update", this.getSnapshot());
     };
 
     NumberEngine.prototype.activateBooster = function (booster) {
-        this.state.activeBoostId = booster.id;
-        this.state.activeLuck = booster.luck;
-        this.state.activeBoostRemaining = booster.durationClicks;
+        this.state.activeBoosts.push({
+            id: booster.id,
+            luck: booster.luck,
+            remaining: booster.durationClicks,
+            name: booster.name,
+            rollsPerClick: booster.rollsPerClick || 1
+        });
         if (booster.luck > this.state.highestTemporaryLuck) {
             this.state.highestTemporaryLuck = booster.luck;
         }
     };
 
     NumberEngine.prototype.getTotalLuck = function () {
-        return this.state.permanentLuck + this.state.activeLuck;
+        var total = this.state.permanentLuck;
+        var index;
+        for (index = 0; index < this.state.activeBoosts.length; index += 1) {
+            total += this.state.activeBoosts[index].luck;
+        }
+        return total;
     };
 
     NumberEngine.prototype.consumeActiveBoostCharge = function () {
-        if (this.state.activeBoostRemaining <= 0) {
-            this.state.activeBoostId = "";
-            this.state.activeLuck = 0;
-            this.state.activeBoostRemaining = 0;
-            return;
+        var remainingBoosts = [];
+        var index;
+        var boost;
+        for (index = 0; index < this.state.activeBoosts.length; index += 1) {
+            boost = this.state.activeBoosts[index];
+            boost.remaining -= 1;
+            if (boost.remaining > 0) {
+                remainingBoosts.push(boost);
+            }
         }
+        this.state.activeBoosts = remainingBoosts;
+    };
 
-        this.state.activeBoostRemaining -= 1;
-        if (this.state.activeBoostRemaining <= 0) {
-            this.state.activeBoostId = "";
-            this.state.activeLuck = 0;
-            this.state.activeBoostRemaining = 0;
+    NumberEngine.prototype.getRollsPerClick = function () {
+        var rolls = 1;
+        var index;
+        for (index = 0; index < this.state.activeBoosts.length; index += 1) {
+            if (this.state.activeBoosts[index].rollsPerClick > rolls) {
+                rolls = this.state.activeBoosts[index].rollsPerClick;
+            }
         }
+        return rolls;
+    };
+
+    NumberEngine.prototype.hasActiveBoost = function (boosterId) {
+        var index;
+        for (index = 0; index < this.state.activeBoosts.length; index += 1) {
+            if (this.state.activeBoosts[index].id === boosterId) {
+                return true;
+            }
+        }
+        return false;
     };
 
     NumberEngine.prototype.getBoosterById = function (boosterId) {
@@ -749,12 +866,13 @@
             backgroundHue: this.state.backgroundHue,
             coins: this.state.coins,
             totalLuck: this.getTotalLuck(),
+            rollsPerClick: this.getRollsPerClick(),
             permanentLuck: this.state.permanentLuck,
             lastRoll: this.state.lastRoll,
             bestRoll: this.state.bestRoll,
             totalRolls: this.state.totalRolls,
-            activeBoostRemaining: this.state.activeBoostRemaining,
-            activeBoosterName: this.getActiveBoosterName(),
+            activeBoostRemaining: this.getLongestActiveBoostTime(),
+            activeBoosterName: this.getActiveBoosterSummary(),
             latestFind: this.getFindById(this.state.latestFindId),
             bestFind: this.getFindById(this.state.bestFindId),
             unlockedCount: this.state.unlockedAchievements.length,
@@ -763,9 +881,36 @@
         };
     };
 
-    NumberEngine.prototype.getActiveBoosterName = function () {
-        var booster = this.getBoosterById(this.state.activeBoostId);
-        return booster ? booster.name : "None";
+    NumberEngine.prototype.getActiveBoosterSummary = function () {
+        var names = [];
+        var counts = {};
+        var strongestRollsPerClick = this.getRollsPerClick();
+        var index;
+        var boost;
+        for (index = 0; index < this.state.activeBoosts.length; index += 1) {
+            boost = this.state.activeBoosts[index];
+            counts[boost.name] = (counts[boost.name] || 0) + 1;
+        }
+        for (index in counts) {
+            if (Object.prototype.hasOwnProperty.call(counts, index)) {
+                names.push(counts[index] > 1 ? index + " x" + counts[index] : index);
+            }
+        }
+        if (strongestRollsPerClick > 1) {
+            names.push(safeFormatNumber(strongestRollsPerClick) + " rolls/press");
+        }
+        return names.length > 0 ? names.join(", ") : "None";
+    };
+
+    NumberEngine.prototype.getLongestActiveBoostTime = function () {
+        var maxRemaining = 0;
+        var index;
+        for (index = 0; index < this.state.activeBoosts.length; index += 1) {
+            if (this.state.activeBoosts[index].remaining > maxRemaining) {
+                maxRemaining = this.state.activeBoosts[index].remaining;
+            }
+        }
+        return maxRemaining;
     };
 
     NumberEngine.prototype.getBoosterSnapshot = function () {
@@ -779,6 +924,7 @@
                 name: booster.name,
                 cost: booster.cost,
                 luck: booster.luck,
+                rollsPerClick: booster.rollsPerClick || 1,
                 durationClicks: booster.durationClicks,
                 singleUse: booster.singleUse,
                 permanent: booster.permanent,
@@ -794,11 +940,126 @@
         return snapshot;
     };
 
+    function CalmMusicPlayer() {
+        this.context = null;
+        this.master = null;
+        this.delay = null;
+        this.delayGain = null;
+        this.filter = null;
+        this.interval = null;
+        this.isPlaying = false;
+        this.step = 0;
+        this.chords = [
+            [261.63, 329.63, 392.00, 493.88],
+            [220.00, 293.66, 349.23, 440.00],
+            [246.94, 311.13, 392.00, 466.16],
+            [196.00, 261.63, 329.63, 392.00]
+        ];
+    }
+
+    CalmMusicPlayer.prototype.ensureContext = function () {
+        var AudioContextRef = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextRef) {
+            return false;
+        }
+        if (!this.context) {
+            this.context = new AudioContextRef();
+            this.master = this.context.createGain();
+            this.filter = this.context.createBiquadFilter();
+            this.delay = this.context.createDelay();
+            this.delayGain = this.context.createGain();
+
+            this.master.gain.value = 0.075;
+            this.filter.type = "lowpass";
+            this.filter.frequency.value = 1400;
+            this.delay.delayTime.value = 0.36;
+            this.delayGain.gain.value = 0.18;
+
+            this.filter.connect(this.master);
+            this.filter.connect(this.delay);
+            this.delay.connect(this.delayGain);
+            this.delayGain.connect(this.master);
+            this.master.connect(this.context.destination);
+        }
+        return true;
+    };
+
+    CalmMusicPlayer.prototype.start = function () {
+        var self = this;
+        if (!this.ensureContext()) {
+            return false;
+        }
+        if (this.context.state === "suspended") {
+            this.context.resume();
+        }
+        if (this.isPlaying) {
+            return true;
+        }
+        this.isPlaying = true;
+        this.step = 0;
+        this.playStep();
+        this.interval = window.setInterval(function () {
+            self.playStep();
+        }, 3600);
+        return true;
+    };
+
+    CalmMusicPlayer.prototype.stop = function () {
+        window.clearInterval(this.interval);
+        this.interval = null;
+        this.isPlaying = false;
+        if (this.master && this.context) {
+            this.master.gain.cancelScheduledValues(this.context.currentTime);
+            this.master.gain.setTargetAtTime(0.0001, this.context.currentTime, 0.24);
+        }
+    };
+
+    CalmMusicPlayer.prototype.playStep = function () {
+        var chord;
+        var now;
+        var index;
+        if (!this.context || !this.isPlaying) {
+            return;
+        }
+        now = this.context.currentTime;
+        chord = this.chords[this.step % this.chords.length];
+        this.master.gain.cancelScheduledValues(now);
+        this.master.gain.setTargetAtTime(0.075, now, 0.3);
+
+        for (index = 0; index < chord.length; index += 1) {
+            this.playTone(chord[index], now + index * 0.045, 3.3, index === 0 ? 0.28 : 0.18);
+        }
+        this.playTone(chord[1] * 2, now + 1.15, 1.8, 0.08);
+        this.playTone(chord[2] * 2, now + 2.25, 1.6, 0.07);
+        this.step += 1;
+    };
+
+    CalmMusicPlayer.prototype.playTone = function (frequency, startAt, duration, level) {
+        var oscillator = this.context.createOscillator();
+        var gain = this.context.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(frequency, startAt);
+        oscillator.detune.setValueAtTime((Math.random() * 6) - 3, startAt);
+        gain.gain.setValueAtTime(0.0001, startAt);
+        gain.gain.exponentialRampToValueAtTime(level, startAt + 0.32);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+        oscillator.connect(gain);
+        gain.connect(this.filter);
+        oscillator.start(startAt);
+        oscillator.stop(startAt + duration + 0.08);
+    };
+
     function View(engine) {
         this.engine = engine;
         this.elements = {};
+        this.music = new CalmMusicPlayer();
+        this.spotifySongs = this.loadSpotifySongs();
+        this.activeSpotifyIndex = this.spotifySongs.length > 0 ? 0 : -1;
         this.cutsceneTimer = null;
+        this.cutsceneStepTimers = [];
         this.saveTimer = null;
+        this.luckSpinTimer = null;
+        this.luckSpinInterval = null;
     }
 
     View.prototype.cache = function () {
@@ -808,6 +1069,29 @@
         this.elements.backpackButton = document.getElementById("backpackButton");
         this.elements.backpackPanel = document.getElementById("backpackPanel");
         this.elements.closeBackpackButton = document.getElementById("closeBackpackButton");
+        this.elements.luckMachineButton = document.getElementById("luckMachineButton");
+        this.elements.luckMachinePanel = document.getElementById("luckMachinePanel");
+        this.elements.closeLuckMachineButton = document.getElementById("closeLuckMachineButton");
+        this.elements.musicToggleButton = document.getElementById("musicToggleButton");
+        this.elements.musicToggleText = document.getElementById("musicToggleText");
+        this.elements.musicPanel = document.getElementById("musicPanel");
+        this.elements.closeMusicPanelButton = document.getElementById("closeMusicPanelButton");
+        this.elements.calmMusicButton = document.getElementById("calmMusicButton");
+        this.elements.spotifySongForm = document.getElementById("spotifySongForm");
+        this.elements.spotifyUrlInput = document.getElementById("spotifyUrlInput");
+        this.elements.spotifyTitleInput = document.getElementById("spotifyTitleInput");
+        this.elements.spotifyArtistInput = document.getElementById("spotifyArtistInput");
+        this.elements.spotifyMessage = document.getElementById("spotifyMessage");
+        this.elements.spotifyPlayerHost = document.getElementById("spotifyPlayerHost");
+        this.elements.spotifySongList = document.getElementById("spotifySongList");
+        this.elements.luckMachineCabinet = document.getElementById("luckMachineCabinet");
+        this.elements.luckSpinButton = document.getElementById("luckSpinButton");
+        this.elements.luckReelA = document.getElementById("luckReelA");
+        this.elements.luckReelB = document.getElementById("luckReelB");
+        this.elements.luckReelC = document.getElementById("luckReelC");
+        this.elements.luckSpinResult = document.getElementById("luckSpinResult");
+        this.elements.luckSpinDelta = document.getElementById("luckSpinDelta");
+        this.elements.luckMachineNote = document.getElementById("luckMachineNote");
         this.elements.microText = document.getElementById("microText");
         this.elements.findText = document.getElementById("findText");
         this.elements.saveText = document.getElementById("saveText");
@@ -827,6 +1111,10 @@
         this.elements.cutsceneOverlay = document.getElementById("cutsceneOverlay");
         this.elements.cutsceneTitle = document.getElementById("cutsceneTitle");
         this.elements.cutsceneSubtitle = document.getElementById("cutsceneSubtitle");
+        this.elements.cutsceneValue = document.getElementById("cutsceneValue");
+        this.elements.cutsceneSequence = document.getElementById("cutsceneSequence");
+        this.elements.cutscenePhase = document.getElementById("cutscenePhase");
+        this.elements.cutsceneMonologue = document.getElementById("cutsceneMonologue");
     };
 
     View.prototype.bind = function () {
@@ -847,6 +1135,65 @@
         if (this.elements.closeBackpackButton) {
             this.elements.closeBackpackButton.addEventListener("click", function () {
                 self.setBackpackOpen(false);
+            });
+        }
+
+        if (this.elements.luckMachineButton) {
+            this.elements.luckMachineButton.addEventListener("click", function () {
+                self.toggleLuckMachine();
+            });
+        }
+
+        if (this.elements.closeLuckMachineButton) {
+            this.elements.closeLuckMachineButton.addEventListener("click", function () {
+                self.setLuckMachineOpen(false);
+            });
+        }
+
+        if (this.elements.luckSpinButton) {
+            this.elements.luckSpinButton.addEventListener("click", function () {
+                if (self.elements.luckSpinButton.disabled) {
+                    return;
+                }
+                self.engine.spinLuckMachine();
+            });
+        }
+
+        if (this.elements.musicToggleButton) {
+            this.elements.musicToggleButton.addEventListener("click", function () {
+                self.toggleMusicPanel();
+            });
+        }
+
+        if (this.elements.closeMusicPanelButton) {
+            this.elements.closeMusicPanelButton.addEventListener("click", function () {
+                self.setMusicPanelOpen(false);
+            });
+        }
+
+        if (this.elements.calmMusicButton) {
+            this.elements.calmMusicButton.addEventListener("click", function () {
+                self.toggleMusic();
+            });
+        }
+
+        if (this.elements.spotifySongForm) {
+            this.elements.spotifySongForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+                self.addSpotifySong();
+            });
+        }
+
+        if (this.elements.spotifySongList) {
+            this.elements.spotifySongList.addEventListener("click", function (event) {
+                var playButton = event.target && event.target.closest ? event.target.closest(".spotify-play-button") : null;
+                var removeButton = event.target && event.target.closest ? event.target.closest(".spotify-remove-button") : null;
+                if (playButton) {
+                    self.playSpotifySong(Number(playButton.getAttribute("data-song-index")));
+                }
+                if (removeButton) {
+                    self.removeSpotifySong(Number(removeButton.getAttribute("data-song-index")));
+                }
             });
         }
 
@@ -872,6 +1219,12 @@
         this.engine.on("cutscene", function (milestone) {
             self.playCutscene(milestone);
         });
+
+        this.engine.on("luckSpin", function (result) {
+            self.playLuckSpin(result);
+        });
+
+        this.renderSpotifySongs();
     };
 
     View.prototype.render = function (snapshot) {
@@ -883,6 +1236,7 @@
             this.elements.microText.textContent =
                 "Luck: " + safeFormatNumber(snapshot.totalLuck) +
                 ". Last roll: " + safeFormatNumber(snapshot.lastRoll) +
+                ". Rolls/press: " + safeFormatNumber(snapshot.rollsPerClick) +
                 ". " + snapshot.unlockedCount + "/" + TOTAL_ACHIEVEMENTS + " achievements unlocked.";
         }
 
@@ -961,7 +1315,7 @@
             card = this.elements.boosterTemplate.content.firstElementChild.cloneNode(true);
             card.querySelector(".booster-name").textContent = booster.name;
             card.querySelector(".booster-description").textContent = booster.unlocked
-                ? booster.description + " Costs " + safeFormatNumber(booster.cost) + " coins for +" + safeFormatNumber(booster.luck) + " luck."
+                ? booster.description + " Costs " + safeFormatNumber(booster.cost) + " coins" + (booster.rollsPerClick > 1 ? " and gives " + safeFormatNumber(booster.rollsPerClick) + " rolls per press." : " for +" + safeFormatNumber(booster.luck) + " luck.")
                 : "Unlocks after " + safeFormatNumber(booster.unlockRolls) + " total rolls.";
             card.querySelector(".booster-owned").textContent = "Owned: " + safeFormatNumber(booster.owned);
             card.querySelector(".booster-buy").textContent = booster.exhausted ? "Used" : booster.maxed ? "Maxed" : "Buy (" + safeFormatNumber(booster.cost) + ")";
@@ -1051,22 +1405,378 @@
         }
     };
 
-    View.prototype.playCutscene = function (milestone) {
+    View.prototype.playLuckSpin = function (result) {
         var self = this;
+        var reels = [this.elements.luckReelA, this.elements.luckReelB, this.elements.luckReelC];
+        var finalText = padLuckValue(result.value);
+        var index;
+
+        window.clearTimeout(this.luckSpinTimer);
+        window.clearInterval(this.luckSpinInterval);
+
+        if (this.elements.luckMachineCabinet) {
+            this.elements.luckMachineCabinet.classList.add("is-spinning");
+            this.elements.luckMachineCabinet.classList.remove("is-positive", "is-negative");
+        }
+        if (this.elements.luckSpinButton) {
+            this.elements.luckSpinButton.disabled = true;
+        }
+        if (this.elements.luckSpinResult) {
+            this.elements.luckSpinResult.textContent = "Spinning";
+        }
+        if (this.elements.luckSpinDelta) {
+            this.elements.luckSpinDelta.textContent = "...";
+        }
+
+        for (index = 0; index < reels.length; index += 1) {
+            if (reels[index]) {
+                reels[index].classList.remove("reel-green", "reel-red");
+            }
+        }
+
+        this.luckSpinInterval = window.setInterval(function () {
+            var reelIndex;
+            for (reelIndex = 0; reelIndex < reels.length; reelIndex += 1) {
+                if (reels[reelIndex]) {
+                    reels[reelIndex].textContent = String(self.engine.randomInt(0, 9));
+                }
+            }
+        }, 55);
+
+        this.luckSpinTimer = window.setTimeout(function () {
+            window.clearInterval(self.luckSpinInterval);
+            for (index = 0; index < reels.length; index += 1) {
+                if (reels[index]) {
+                    reels[index].textContent = finalText.charAt(index);
+                    reels[index].classList.add(result.positive ? "reel-green" : "reel-red");
+                }
+            }
+            if (self.elements.luckMachineCabinet) {
+                self.elements.luckMachineCabinet.classList.remove("is-spinning");
+                self.elements.luckMachineCabinet.classList.add(result.positive ? "is-positive" : "is-negative");
+            }
+            if (self.elements.luckSpinResult) {
+                self.elements.luckSpinResult.textContent = finalText;
+            }
+            if (self.elements.luckSpinDelta) {
+                self.elements.luckSpinDelta.textContent = (result.delta >= 0 ? "+" : "") + safeFormatNumber(result.delta) + " luck";
+            }
+            if (self.elements.luckMachineNote) {
+                self.elements.luckMachineNote.textContent = "Permanent luck changed by " + (result.delta >= 0 ? "+" : "") + safeFormatNumber(result.delta) + ".";
+            }
+            if (self.elements.luckSpinButton) {
+                self.elements.luckSpinButton.disabled = false;
+            }
+        }, 1300);
+    };
+
+    View.prototype.toggleMusic = function () {
+        if (this.music.isPlaying) {
+            this.music.stop();
+            this.updateMusicButton(false, true);
+            return;
+        }
+        if (!this.music.start()) {
+            this.updateMusicButton(false, false);
+            return;
+        }
+        this.updateMusicButton(true, true);
+    };
+
+    View.prototype.updateMusicButton = function (isOn, isSupported) {
+        if (this.elements.calmMusicButton) {
+            this.elements.calmMusicButton.classList.toggle("is-on", isOn);
+            this.elements.calmMusicButton.setAttribute("aria-pressed", isOn ? "true" : "false");
+            this.elements.calmMusicButton.disabled = !isSupported;
+            this.elements.calmMusicButton.textContent = isSupported ? (isOn ? "Calm Music On" : "Calm Music Off") : "No Audio";
+        }
+        if (this.elements.musicToggleText) {
+            this.elements.musicToggleText.textContent = "Music";
+        }
+    };
+
+    View.prototype.toggleMusicPanel = function () {
+        var isHidden = this.elements.musicPanel.classList.contains("hidden");
+        this.setMusicPanelOpen(isHidden);
+    };
+
+    View.prototype.setMusicPanelOpen = function (isOpen) {
+        if (!this.elements.musicPanel || !this.elements.musicToggleButton) {
+            return;
+        }
+        this.elements.musicPanel.classList.toggle("hidden", !isOpen);
+        this.elements.musicPanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+        this.elements.musicToggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    };
+
+    View.prototype.loadSpotifySongs = function () {
+        var storage;
+        var raw;
+        var parsed;
+        try {
+            storage = window.localStorage;
+            raw = storage.getItem(SPOTIFY_LIBRARY_KEY);
+            if (!raw) {
+                return [];
+            }
+            parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            return [];
+        }
+    };
+
+    View.prototype.saveSpotifySongs = function () {
+        try {
+            window.localStorage.setItem(SPOTIFY_LIBRARY_KEY, JSON.stringify(this.spotifySongs));
+        } catch (error) {
+            return false;
+        }
+        return true;
+    };
+
+    View.prototype.addSpotifySong = function () {
+        var embedUrl = createSpotifyEmbedUrl(this.elements.spotifyUrlInput.value);
+        var song;
+        if (!embedUrl) {
+            this.setSpotifyMessage("Use a valid open.spotify.com or spotify: link.");
+            return;
+        }
+
+        song = {
+            url: this.elements.spotifyUrlInput.value.trim(),
+            embedUrl: embedUrl,
+            title: this.elements.spotifyTitleInput.value.trim(),
+            artist: this.elements.spotifyArtistInput.value.trim()
+        };
+
+        if (!song.title || !song.artist) {
+            this.setSpotifyMessage("Add a title and credit before saving.");
+            return;
+        }
+
+        this.spotifySongs.unshift(song);
+        this.activeSpotifyIndex = 0;
+        this.saveSpotifySongs();
+        this.elements.spotifySongForm.reset();
+        this.setSpotifyMessage("Added: " + song.title + " by " + song.artist + ".");
+        this.renderSpotifySongs();
+    };
+
+    View.prototype.playSpotifySong = function (index) {
+        if (index < 0 || index >= this.spotifySongs.length) {
+            return;
+        }
+        this.activeSpotifyIndex = index;
+        if (this.music.isPlaying) {
+            this.music.stop();
+            this.updateMusicButton(false, true);
+        }
+        this.renderSpotifySongs();
+    };
+
+    View.prototype.removeSpotifySong = function (index) {
+        if (index < 0 || index >= this.spotifySongs.length) {
+            return;
+        }
+        this.spotifySongs.splice(index, 1);
+        if (this.spotifySongs.length === 0) {
+            this.activeSpotifyIndex = -1;
+        } else if (this.activeSpotifyIndex >= this.spotifySongs.length) {
+            this.activeSpotifyIndex = this.spotifySongs.length - 1;
+        }
+        this.saveSpotifySongs();
+        this.renderSpotifySongs();
+    };
+
+    View.prototype.renderSpotifySongs = function () {
+        var fragment;
+        var index;
+        var song;
+        var card;
+        var title;
+        var credit;
+        var actions;
+        var playButton;
+        var removeButton;
+
+        this.renderSpotifyPlayer();
+
+        if (!this.elements.spotifySongList) {
+            return;
+        }
+
+        this.elements.spotifySongList.innerHTML = "";
+        if (this.spotifySongs.length === 0) {
+            this.setSpotifyMessage("Add any Spotify track, album, artist, or playlist link.");
+            return;
+        }
+
+        fragment = document.createDocumentFragment();
+        for (index = 0; index < this.spotifySongs.length; index += 1) {
+            song = this.spotifySongs[index];
+            card = document.createElement("article");
+            card.className = "spotify-song-card" + (index === this.activeSpotifyIndex ? " is-active" : "");
+
+            title = document.createElement("strong");
+            title.textContent = song.title;
+            credit = document.createElement("span");
+            credit.textContent = "Credits: " + song.artist;
+
+            actions = document.createElement("div");
+            actions.className = "spotify-song-actions";
+            playButton = document.createElement("button");
+            playButton.className = "spotify-play-button";
+            playButton.type = "button";
+            playButton.setAttribute("data-song-index", String(index));
+            playButton.textContent = index === this.activeSpotifyIndex ? "Playing" : "Play";
+            removeButton = document.createElement("button");
+            removeButton.className = "spotify-remove-button";
+            removeButton.type = "button";
+            removeButton.setAttribute("data-song-index", String(index));
+            removeButton.textContent = "Remove";
+            actions.appendChild(playButton);
+            actions.appendChild(removeButton);
+
+            card.appendChild(title);
+            card.appendChild(credit);
+            card.appendChild(actions);
+            fragment.appendChild(card);
+        }
+        this.elements.spotifySongList.appendChild(fragment);
+    };
+
+    View.prototype.renderSpotifyPlayer = function () {
+        var song;
+        var iframe;
+        var credit;
+        if (!this.elements.spotifyPlayerHost) {
+            return;
+        }
+        this.elements.spotifyPlayerHost.innerHTML = "";
+        if (this.activeSpotifyIndex < 0 || this.activeSpotifyIndex >= this.spotifySongs.length) {
+            return;
+        }
+        song = this.spotifySongs[this.activeSpotifyIndex];
+        iframe = document.createElement("iframe");
+        iframe.title = "Spotify player for " + song.title;
+        iframe.src = song.embedUrl;
+        iframe.width = "100%";
+        iframe.height = "152";
+        iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
+        iframe.loading = "lazy";
+
+        credit = document.createElement("p");
+        credit.className = "spotify-active-credit";
+        credit.textContent = "Credits: " + song.title + " by " + song.artist;
+
+        this.elements.spotifyPlayerHost.appendChild(iframe);
+        this.elements.spotifyPlayerHost.appendChild(credit);
+    };
+
+    View.prototype.setSpotifyMessage = function (text) {
+        if (this.elements.spotifyMessage) {
+            this.elements.spotifyMessage.textContent = text;
+        }
+    };
+
+    View.prototype.clearCutsceneTimers = function () {
+        var index;
+        window.clearTimeout(this.cutsceneTimer);
+        for (index = 0; index < this.cutsceneStepTimers.length; index += 1) {
+            window.clearTimeout(this.cutsceneStepTimers[index]);
+        }
+        this.cutsceneStepTimers = [];
+    };
+
+    View.prototype.resetCutsceneSequence = function () {
+        if (this.elements.cutsceneSequence) {
+            this.elements.cutsceneSequence.classList.add("hidden");
+        }
+        if (this.elements.cutscenePhase) {
+            this.elements.cutscenePhase.textContent = "";
+        }
+        if (this.elements.cutsceneMonologue) {
+            this.elements.cutsceneMonologue.textContent = "";
+        }
+    };
+
+    View.prototype.playCutscene = function (milestone) {
+        var themeClass;
+        var durationMs;
         if (!this.elements.cutsceneOverlay) {
             return;
         }
 
+        this.clearCutsceneTimers();
+        this.resetCutsceneSequence();
+
+        durationMs = milestone.durationMs || DEFAULT_CUTSCENE_DURATION_MS;
+        themeClass = "theme-" + (milestone.theme || "neon");
+        this.elements.cutsceneOverlay.className = "cutscene-overlay hidden";
+        this.elements.cutsceneOverlay.removeAttribute("data-mode");
+        this.elements.cutsceneOverlay.style.setProperty("--cutscene-duration", durationMs + "ms");
+        this.elements.cutsceneOverlay.style.setProperty("--cutscene-meter-duration", Math.max(durationMs - 400, 1000) + "ms");
+        void this.elements.cutsceneOverlay.offsetWidth;
+        this.elements.cutsceneOverlay.className = "cutscene-overlay " + themeClass;
         this.elements.cutsceneTitle.textContent = milestone.title;
-        this.elements.cutsceneSubtitle.textContent = milestone.subtitle + " Reached " + safeFormatNumber(milestone.value) + " numbers.";
-        this.elements.cutsceneOverlay.classList.remove("hidden");
+        this.elements.cutsceneSubtitle.textContent = milestone.subtitle;
+        if (this.elements.cutsceneValue) {
+            this.elements.cutsceneValue.textContent = "Threshold " + safeFormatNumber(milestone.value);
+        }
         this.elements.cutsceneOverlay.setAttribute("aria-hidden", "false");
 
-        window.clearTimeout(this.cutsceneTimer);
-        this.cutsceneTimer = window.setTimeout(function () {
-            self.elements.cutsceneOverlay.classList.add("hidden");
-            self.elements.cutsceneOverlay.setAttribute("aria-hidden", "true");
-        }, 3400);
+        if (milestone.mode === "finale") {
+            this.playFinaleCutscene(milestone, durationMs);
+            return;
+        }
+
+        this.cutsceneTimer = window.setTimeout(this.hideCutscene.bind(this), durationMs);
+    };
+
+    View.prototype.playFinaleCutscene = function (milestone, durationMs) {
+        var self = this;
+        var index;
+        this.elements.cutsceneOverlay.setAttribute("data-mode", "finale");
+        if (this.elements.cutsceneSequence) {
+            this.elements.cutsceneSequence.classList.remove("hidden");
+        }
+        for (index = 0; index < FINALE_CUTSCENE_STEPS.length; index += 1) {
+            (function (step) {
+                self.cutsceneStepTimers.push(window.setTimeout(function () {
+                    self.updateCutsceneSequence(step.phase, step.line, step.phase === "Absolute Zenith" ? "Threshold " + safeFormatNumber(milestone.value) : self.elements.cutsceneValue.textContent);
+                }, step.at));
+            }(FINALE_CUTSCENE_STEPS[index]));
+        }
+        this.cutsceneTimer = window.setTimeout(this.hideCutscene.bind(this), durationMs);
+    };
+
+    View.prototype.updateCutsceneSequence = function (phase, line, valueText) {
+        if (this.elements.cutscenePhase) {
+            this.elements.cutscenePhase.textContent = phase;
+        }
+        if (this.elements.cutsceneMonologue) {
+            this.elements.cutsceneMonologue.textContent = line;
+        }
+        if (this.elements.cutsceneSequence) {
+            this.elements.cutsceneSequence.classList.remove("hidden");
+            this.elements.cutsceneSequence.classList.remove("is-refreshing");
+            void this.elements.cutsceneSequence.offsetWidth;
+            this.elements.cutsceneSequence.classList.add("is-refreshing");
+        }
+        if (this.elements.cutsceneValue && valueText) {
+            this.elements.cutsceneValue.textContent = valueText;
+        }
+    };
+
+    View.prototype.hideCutscene = function () {
+        if (!this.elements.cutsceneOverlay) {
+            return;
+        }
+        this.elements.cutsceneOverlay.classList.add("hidden");
+        this.elements.cutsceneOverlay.setAttribute("aria-hidden", "true");
+        this.elements.cutsceneOverlay.removeAttribute("data-mode");
+        this.resetCutsceneSequence();
     };
 
     View.prototype.toggleBackpack = function () {
@@ -1082,6 +1792,67 @@
         this.elements.backpackPanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
         this.elements.backpackButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
     };
+
+    View.prototype.toggleLuckMachine = function () {
+        var isHidden = this.elements.luckMachinePanel.classList.contains("hidden");
+        this.setLuckMachineOpen(isHidden);
+    };
+
+    View.prototype.setLuckMachineOpen = function (isOpen) {
+        if (!this.elements.luckMachinePanel || !this.elements.luckMachineButton) {
+            return;
+        }
+        this.elements.luckMachinePanel.classList.toggle("hidden", !isOpen);
+        this.elements.luckMachinePanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+        this.elements.luckMachineButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    };
+
+    function padLuckValue(value) {
+        var text = String(value);
+        while (text.length < 3) {
+            text = "0" + text;
+        }
+        return text;
+    }
+
+    function createSpotifyEmbedUrl(input) {
+        var trimmed = String(input || "").trim();
+        var spotifyUriMatch;
+        var url;
+        var parts;
+        var type;
+        var id;
+
+        spotifyUriMatch = trimmed.match(/^spotify:(track|album|playlist|artist|episode|show):([A-Za-z0-9]+)$/);
+        if (spotifyUriMatch) {
+            return "https://open.spotify.com/embed/" + spotifyUriMatch[1] + "/" + spotifyUriMatch[2];
+        }
+
+        try {
+            url = new URL(trimmed);
+        } catch (error) {
+            return "";
+        }
+
+        if (url.hostname !== "open.spotify.com") {
+            return "";
+        }
+
+        parts = url.pathname.split("/").filter(Boolean);
+        if (parts[0] === "embed") {
+            parts.shift();
+        }
+        if (parts[0] && parts[0].indexOf("intl-") === 0) {
+            parts.shift();
+        }
+        type = parts[0];
+        id = parts[1];
+        if (!id || ["track", "album", "playlist", "artist", "episode", "show"].indexOf(type) === -1) {
+            return "";
+        }
+
+        return "https://open.spotify.com/embed/" + type + "/" + id;
+    }
 
     function bootstrap() {
         var catalog = new AchievementCatalog();
