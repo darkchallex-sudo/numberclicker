@@ -35,23 +35,23 @@
             </div>
             <button id="closeMusicPanelButton" class="close-panel" type="button" aria-label="Close music">X</button>
         </div>
-        <button id="calmMusicButton" class="calm-music-button" type="button" aria-pressed="false">Calm Music Off</button>
+        <button id="calmMusicButton" class="calm-music-button" type="button" aria-pressed="false">Play Calm Music</button>
         <form id="spotifySongForm" class="spotify-song-form">
             <label>
-                <span>Spotify link</span>
-                <input id="spotifyUrlInput" type="url" placeholder="https://open.spotify.com/track/..." required>
+                <span>Spotify link or page</span>
+                <input id="spotifyUrlInput" type="url" placeholder="https://open.spotify.com/search/..." required>
             </label>
-            <label>
+            <label class="spotify-manual-credit">
                 <span>Song title</span>
-                <input id="spotifyTitleInput" type="text" placeholder="Song name" required>
+                <input id="spotifyTitleInput" type="text" placeholder="Auto-filled when Spotify provides it">
             </label>
-            <label>
+            <label class="spotify-manual-credit">
                 <span>Artist / credits</span>
-                <input id="spotifyArtistInput" type="text" placeholder="Artist, creator, or credit" required>
+                <input id="spotifyArtistInput" type="text" placeholder="Optional extra credits">
             </label>
-            <button class="spotify-add-button" type="submit">Add Song</button>
+            <button class="spotify-add-button" type="submit">Add From Spotify</button>
         </form>
-        <p id="spotifyMessage" class="spotify-message">Add any Spotify track, album, artist, or playlist link.</p>
+        <p id="spotifyMessage" class="spotify-message">Paste any Spotify link. Credits are filled automatically when Spotify provides metadata. For Spotify songs, press play inside the Spotify player.</p>
         <div id="spotifyPlayerHost" class="spotify-player-host"></div>
         <div id="spotifySongList" class="spotify-song-list"></div>
     </aside>
@@ -153,8 +153,8 @@
             </div>
         </div>
         <div class="luck-machine-actions">
-            <button id="luckSpinButton" class="luck-spin-button" type="button">Add 1000 coins</button>
-            <p id="luckMachineNote" class="luck-machine-note">Spin 0-999. Green adds permanent luck, red removes it.</p>
+            <button id="luckSpinButton" class="luck-spin-button" type="button">Spin for 1000 coins</button>
+            <p id="luckMachineNote" class="luck-machine-note">Spend 1,000 coins to spin 0-999. Green adds permanent luck, red removes it.</p>
         </div>
     </aside>
 
