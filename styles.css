@@ -216,6 +216,10 @@ body {
     font-size: 0.82rem;
 }
 
+.spotify-manual-credit {
+    opacity: 0.74;
+}
+
 .spotify-song-form input {
     width: 100%;
     min-height: 42px;
