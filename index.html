@@ -17,6 +17,45 @@
         <span>Backpack</span>
     </button>
 
+    <button id="luckMachineButton" class="luck-machine-button" type="button" aria-expanded="false" aria-controls="luckMachinePanel">
+        <span class="luck-machine-icon" aria-hidden="true">$</span>
+        <span>Luck Machine</span>
+    </button>
+
+    <button id="musicToggleButton" class="music-toggle-button" type="button" aria-expanded="false" aria-controls="musicPanel">
+        <span class="music-toggle-icon" aria-hidden="true">~</span>
+        <span id="musicToggleText">Music</span>
+    </button>
+
+    <aside id="musicPanel" class="music-panel hidden" aria-hidden="true">
+        <div class="music-panel-header">
+            <div>
+                <p class="panel-kicker">Background Audio</p>
+                <h2>Music</h2>
+            </div>
+            <button id="closeMusicPanelButton" class="close-panel" type="button" aria-label="Close music">X</button>
+        </div>
+        <button id="calmMusicButton" class="calm-music-button" type="button" aria-pressed="false">Calm Music Off</button>
+        <form id="spotifySongForm" class="spotify-song-form">
+            <label>
+                <span>Spotify link</span>
+                <input id="spotifyUrlInput" type="url" placeholder="https://open.spotify.com/track/..." required>
+            </label>
+            <label>
+                <span>Song title</span>
+                <input id="spotifyTitleInput" type="text" placeholder="Song name" required>
+            </label>
+            <label>
+                <span>Artist / credits</span>
+                <input id="spotifyArtistInput" type="text" placeholder="Artist, creator, or credit" required>
+            </label>
+            <button class="spotify-add-button" type="submit">Add Song</button>
+        </form>
+        <p id="spotifyMessage" class="spotify-message">Add any Spotify track, album, artist, or playlist link.</p>
+        <div id="spotifyPlayerHost" class="spotify-player-host"></div>
+        <div id="spotifySongList" class="spotify-song-list"></div>
+    </aside>
+
     <aside id="backpackPanel" class="backpack-panel hidden" aria-hidden="true">
         <div class="panel-header">
             <div>
@@ -68,6 +107,57 @@
         <div id="boosterList" class="booster-list"></div>
     </aside>
 
+    <aside id="luckMachinePanel" class="luck-machine-panel hidden" aria-hidden="true">
+        <div class="panel-header">
+            <div>
+                <p class="panel-kicker">Permanent Luck</p>
+                <h2>Luck Machine</h2>
+            </div>
+            <button id="closeLuckMachineButton" class="close-panel" type="button" aria-label="Close luck machine">X</button>
+        </div>
+        <div id="luckMachineCabinet" class="luck-cabinet" aria-live="polite">
+            <div class="cabinet-crown">
+                <span class="cabinet-light"></span>
+                <span class="cabinet-light"></span>
+                <span class="cabinet-light"></span>
+                <strong>777</strong>
+                <span class="cabinet-light"></span>
+                <span class="cabinet-light"></span>
+                <span class="cabinet-light"></span>
+            </div>
+            <div class="cabinet-face">
+                <div class="machine-glow"></div>
+                <div class="machine-reels">
+                    <div id="luckReelA" class="luck-reel reel-green">0</div>
+                    <div id="luckReelB" class="luck-reel reel-green">0</div>
+                    <div id="luckReelC" class="luck-reel reel-green">0</div>
+                </div>
+                <div class="machine-plate">
+                    <span id="luckSpinResult">Ready</span>
+                    <span id="luckSpinDelta">+0 luck</span>
+                </div>
+                <div class="metal-bolts" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            <div class="machine-lower">
+                <div class="coin-slot">
+                    <span></span>
+                </div>
+                <div class="machine-lever" aria-hidden="true">
+                    <span></span>
+                </div>
+            </div>
+        </div>
+        <div class="luck-machine-actions">
+            <button id="luckSpinButton" class="luck-spin-button" type="button">Add 1000 coins</button>
+            <p id="luckMachineNote" class="luck-machine-note">Spin 0-999. Green adds permanent luck, red removes it.</p>
+        </div>
+    </aside>
+
     <section class="core">
         <p class="hint">Click the button. Chase the impossible.</p>
         <div class="number-wrap">
@@ -85,18 +175,45 @@
     <section id="cutsceneOverlay" class="cutscene-overlay hidden" aria-hidden="true">
         <div class="cutscene-blackout"></div>
         <div class="cutscene-backdrop"></div>
+        <div class="cutscene-grid"></div>
+        <div class="cutscene-stars"></div>
+        <div class="cutscene-aurora"></div>
+        <div class="cutscene-halo"></div>
         <div class="cutscene-smear"></div>
         <div class="cutscene-burst burst-a"></div>
         <div class="cutscene-burst burst-b"></div>
+        <div class="cutscene-burst burst-c"></div>
+        <div class="cutscene-beams">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="cutscene-shards">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
         <div class="cutscene-rings">
             <span></span>
             <span></span>
             <span></span>
         </div>
+        <div class="cutscene-meter">
+            <span class="cutscene-meter-fill"></span>
+        </div>
         <div class="cutscene-panel">
             <p class="cutscene-kicker">Milestone Cutscene</p>
             <h2 id="cutsceneTitle">Awakened</h2>
             <p id="cutsceneSubtitle" class="cutscene-subtitle"></p>
+            <p id="cutsceneValue" class="cutscene-value"></p>
+            <div id="cutsceneSequence" class="cutscene-sequence hidden" aria-live="polite">
+                <p id="cutscenePhase" class="cutscene-phase"></p>
+                <p id="cutsceneMonologue" class="cutscene-monologue"></p>
+            </div>
         </div>
     </section>
 </main>
