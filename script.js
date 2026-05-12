@@ -22,8 +22,8 @@
         10000000, 25000000, 50000000
     ];
 
-    var COINS_PER_CLICK_BLOCK = 5;
-    var CLICKS_PER_COIN_BLOCK = 20;
+    var COINS_PER_CLICK_BLOCK = 150;
+    var CLICKS_PER_COIN_BLOCK = 10;
     var FIVE_MINUTES_MS = 5 * 60 * 1000;
     var ONE_MINUTE_MS = 60 * 1000;
     var TEN_MINUTES_MS = 10 * 60 * 1000;
