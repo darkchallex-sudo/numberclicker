@@ -700,6 +700,113 @@
         this.emit("update", this.getSnapshot());
     };
 
+    NumberEngine.prototype.runAdminAction = function (action) {
+        var message = "Admin action complete.";
+
+        if (action === "coins") {
+            this.state.coins += 1000000000;
+            message = "+1,000,000,000 coins granted.";
+        } else if (action === "luck") {
+            this.state.permanentLuck += 1000000;
+            message = "+1,000,000 permanent luck granted.";
+        } else if (action === "rolls") {
+            this.state.totalRolls += 100000;
+            this.state.lastRoll = Math.max(this.state.lastRoll, this.getTotalLuck() + 10000);
+            this.state.bestRoll = Math.max(this.state.bestRoll, this.state.lastRoll);
+            this.state.bestBaseRoll = Math.max(this.state.bestBaseRoll, 10000);
+            message = "+100,000 rolls granted.";
+        } else if (action === "clicks") {
+            this.state.totalClicks += 100000;
+            this.state.number += 100000;
+            this.state.coins += 1500000;
+            message = "+100,000 clicks and click coins granted.";
+        } else if (action === "milestone-10k") {
+            this.applyAdminMilestone(10000);
+            message = "10K milestone granted.";
+        } else if (action === "milestone-5b") {
+            this.applyAdminMilestone(5000000000);
+            message = "5B milestone granted.";
+        } else if (action === "boosters") {
+            this.adminGrantBoosters();
+            message = "Every booster stacked.";
+        } else if (action === "finds") {
+            this.state.latestFindId = FIND_CATALOG[FIND_CATALOG.length - 1].id;
+            this.state.bestFindId = FIND_CATALOG[FIND_CATALOG.length - 1].id;
+            this.state.lastRoll = Math.max(this.state.lastRoll, MAX_FIND_ROLL);
+            this.state.bestRoll = Math.max(this.state.bestRoll, MAX_FIND_ROLL);
+            message = "Best find granted.";
+        } else if (action === "achievements") {
+            this.adminUnlockAllAchievements();
+            message = "All achievements unlocked.";
+        } else if (action === "max") {
+            this.state.coins += 1000000000;
+            this.state.permanentLuck += 10000000;
+            this.state.totalClicks += 1000000;
+            this.state.totalRolls += 1000000;
+            this.applyAdminMilestone(5000000000);
+            this.adminGrantBoosters();
+            this.adminUnlockAllAchievements();
+            this.state.latestFindId = FIND_CATALOG[FIND_CATALOG.length - 1].id;
+            this.state.bestFindId = FIND_CATALOG[FIND_CATALOG.length - 1].id;
+            message = "Max save granted.";
+        }
+
+        this.resolveFind();
+        this.unlockAchievements();
+        this.triggerCutscenes();
+        this.lastSaveSucceeded = this.storage.save(this.state);
+        this.emit("toast", {
+            name: "Admin Panel",
+            description: message
+        });
+        this.emit("update", this.getSnapshot());
+    };
+
+    NumberEngine.prototype.applyAdminMilestone = function (value) {
+        this.state.number = Math.max(this.state.number, value);
+        this.state.lastRoll = Math.max(this.state.lastRoll, value);
+        this.state.bestRoll = Math.max(this.state.bestRoll, value);
+        this.state.bestBaseRoll = Math.max(this.state.bestBaseRoll, 10000);
+        this.state.totalRolls += 1000;
+        this.state.totalClicks += 1000;
+    };
+
+    NumberEngine.prototype.adminGrantBoosters = function () {
+        var index;
+        var booster;
+        var previousOwned;
+        for (index = 0; index < BOOSTERS.length; index += 1) {
+            booster = BOOSTERS[index];
+            previousOwned = this.state.ownedBoosters[booster.id] || 0;
+            this.state.ownedBoosters[booster.id] = booster.maxPurchases === 1 ? 1 : Math.max(this.state.ownedBoosters[booster.id] || 0, 99);
+            if (booster.permanent && previousOwned === 0) {
+                this.state.permanentLuck += booster.luck;
+            }
+            if (!booster.permanent && !booster.singleUse) {
+                this.activateBooster(booster);
+            }
+            if (booster.singleUse) {
+                this.state.usedSingleUseBoosters[booster.id] = false;
+            }
+        }
+    };
+
+    NumberEngine.prototype.adminUnlockAllAchievements = function () {
+        var unlockedMap = {};
+        var index;
+        var achievement;
+        for (index = 0; index < this.state.unlockedAchievements.length; index += 1) {
+            unlockedMap[this.state.unlockedAchievements[index]] = true;
+        }
+        for (index = 0; index < this.catalog.items.length; index += 1) {
+            achievement = this.catalog.items[index];
+            if (!unlockedMap[achievement.id]) {
+                this.state.unlockedAchievements.push(achievement.id);
+                unlockedMap[achievement.id] = true;
+            }
+        }
+    };
+
     NumberEngine.prototype.activateBooster = function (booster) {
         this.state.activeBoosts.push({
             id: booster.id,
@@ -1086,6 +1193,8 @@
         this.music = new CalmMusicPlayer();
         this.spotifySongs = this.loadSpotifySongs();
         this.activeSpotifyIndex = this.spotifySongs.length > 0 ? 0 : -1;
+        this.adminSequence = "pplleeaasseeaaddmmiinn";
+        this.adminBuffer = "";
         this.cutsceneTimer = null;
         this.cutsceneStepTimers = [];
         this.saveTimer = null;
@@ -1123,6 +1232,7 @@
         this.elements.luckSpinResult = document.getElementById("luckSpinResult");
         this.elements.luckSpinDelta = document.getElementById("luckSpinDelta");
         this.elements.luckMachineNote = document.getElementById("luckMachineNote");
+        this.elements.adminPanel = document.getElementById("adminPanel");
         this.elements.microText = document.getElementById("microText");
         this.elements.findText = document.getElementById("findText");
         this.elements.saveText = document.getElementById("saveText");
@@ -1190,6 +1300,20 @@
             });
         }
 
+        if (this.elements.adminPanel) {
+            this.elements.adminPanel.addEventListener("click", function (event) {
+                var button = event.target && event.target.closest ? event.target.closest("[data-admin-action]") : null;
+                if (!button) {
+                    return;
+                }
+                self.engine.runAdminAction(button.getAttribute("data-admin-action"));
+            });
+        }
+
+        document.addEventListener("keydown", function (event) {
+            self.handleAdminSequence(event);
+        });
+
         if (this.elements.musicToggleButton) {
             this.elements.musicToggleButton.addEventListener("click", function () {
                 self.toggleMusicPanel();
@@ -1256,6 +1380,31 @@
         });
 
         this.renderSpotifySongs();
+    };
+
+    View.prototype.handleAdminSequence = function (event) {
+        var key = event.key && event.key.length === 1 ? event.key.toLowerCase() : "";
+        if (!key || key < "a" || key > "z") {
+            return;
+        }
+        this.adminBuffer = (this.adminBuffer + key).slice(-this.adminSequence.length);
+        if (this.adminBuffer === this.adminSequence) {
+            this.unlockAdminPanel();
+            this.adminBuffer = "";
+        }
+    };
+
+    View.prototype.unlockAdminPanel = function () {
+        if (!this.elements.adminPanel) {
+            return;
+        }
+        this.elements.adminPanel.classList.remove("hidden");
+        this.elements.adminPanel.setAttribute("aria-hidden", "false");
+        this.setLuckMachineOpen(true);
+        this.engine.emit("toast", {
+            name: "Admin Panel",
+            description: "Owner tools unlocked."
+        });
     };
 
     View.prototype.render = function (snapshot) {
