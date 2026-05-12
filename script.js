@@ -25,6 +25,7 @@
 
     var COINS_PER_CLICK_BLOCK = 150;
     var CLICKS_PER_COIN_BLOCK = 10;
+    var LUCK_MACHINE_COST = 1000;
     var FIVE_MINUTES_MS = 5 * 60 * 1000;
     var ONE_MINUTE_MS = 60 * 1000;
     var TEN_MINUTES_MS = 10 * 60 * 1000;
@@ -286,21 +287,21 @@
 
     function createQuadPotions() {
         return [
-            { id: "quad-potion-1", name: "Split Sip I", cost: 18, luck: 2, rollsPerClick: 4, durationClicks: 4, singleUse: false, permanent: false, unlockRolls: 12, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 4 clicks." },
-            { id: "quad-potion-2", name: "Split Sip II", cost: 36, luck: 2, rollsPerClick: 4, durationClicks: 6, singleUse: false, permanent: false, unlockRolls: 24, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 6 clicks." },
-            { id: "quad-potion-3", name: "Split Sip III", cost: 54, luck: 2, rollsPerClick: 4, durationClicks: 8, singleUse: false, permanent: false, unlockRolls: 48, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 8 clicks." },
-            { id: "quad-potion-4", name: "Echo Flask I", cost: 80, luck: 2, rollsPerClick: 4, durationClicks: 10, singleUse: false, permanent: false, unlockRolls: 80, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 10 clicks." },
-            { id: "quad-potion-5", name: "Echo Flask II", cost: 110, luck: 2, rollsPerClick: 4, durationClicks: 12, singleUse: false, permanent: false, unlockRolls: 130, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 12 clicks." },
-            { id: "quad-potion-6", name: "Echo Flask III", cost: 150, luck: 2, rollsPerClick: 4, durationClicks: 15, singleUse: false, permanent: false, unlockRolls: 190, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 15 clicks." },
-            { id: "quad-potion-7", name: "Mirror Draft I", cost: 210, luck: 2, rollsPerClick: 4, durationClicks: 18, singleUse: false, permanent: false, unlockRolls: 260, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 18 clicks." },
-            { id: "quad-potion-8", name: "Mirror Draft II", cost: 300, luck: 2, rollsPerClick: 4, durationClicks: 22, singleUse: false, permanent: false, unlockRolls: 360, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 22 clicks." },
-            { id: "quad-potion-9", name: "Mirror Draft III", cost: 420, luck: 2, rollsPerClick: 4, durationClicks: 26, singleUse: false, permanent: false, unlockRolls: 500, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 26 clicks." },
-            { id: "quad-potion-10", name: "Prism Dose I", cost: 620, luck: 2, rollsPerClick: 4, durationClicks: 30, singleUse: false, permanent: false, unlockRolls: 700, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 30 clicks." },
-            { id: "quad-potion-11", name: "Prism Dose II", cost: 900, luck: 2, rollsPerClick: 4, durationClicks: 36, singleUse: false, permanent: false, unlockRolls: 980, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 36 clicks." },
-            { id: "quad-potion-12", name: "Prism Dose III", cost: 1300, luck: 2, rollsPerClick: 4, durationClicks: 42, singleUse: false, permanent: false, unlockRolls: 1350, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 42 clicks." },
-            { id: "quad-potion-13", name: "Zen Vein I", cost: 1900, luck: 2, rollsPerClick: 4, durationClicks: 50, singleUse: false, permanent: false, unlockRolls: 1850, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 50 clicks." },
-            { id: "quad-potion-14", name: "Zen Vein II", cost: 2800, luck: 2, rollsPerClick: 4, durationClicks: 60, singleUse: false, permanent: false, unlockRolls: 2450, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 60 clicks." },
-            { id: "quad-potion-15", name: "Zen Vein III", cost: 4200, luck: 2, rollsPerClick: 4, durationClicks: 72, singleUse: false, permanent: false, unlockRolls: 3200, maxPurchases: 999999, description: "Adds +2 luck and turns one press into 4 rolls for 72 clicks." }
+            { id: "quad-potion-1", name: "Split Sip I", cost: 18, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 4, singleUse: false, permanent: false, unlockRolls: 12, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 4 clicks." },
+            { id: "quad-potion-2", name: "Split Sip II", cost: 36, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 6, singleUse: false, permanent: false, unlockRolls: 24, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 6 clicks." },
+            { id: "quad-potion-3", name: "Split Sip III", cost: 54, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 8, singleUse: false, permanent: false, unlockRolls: 48, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 8 clicks." },
+            { id: "quad-potion-4", name: "Echo Flask I", cost: 80, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 10, singleUse: false, permanent: false, unlockRolls: 80, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 10 clicks." },
+            { id: "quad-potion-5", name: "Echo Flask II", cost: 110, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 12, singleUse: false, permanent: false, unlockRolls: 130, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 12 clicks." },
+            { id: "quad-potion-6", name: "Echo Flask III", cost: 150, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 15, singleUse: false, permanent: false, unlockRolls: 190, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 15 clicks." },
+            { id: "quad-potion-7", name: "Mirror Draft I", cost: 210, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 18, singleUse: false, permanent: false, unlockRolls: 260, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 18 clicks." },
+            { id: "quad-potion-8", name: "Mirror Draft II", cost: 300, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 22, singleUse: false, permanent: false, unlockRolls: 360, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 22 clicks." },
+            { id: "quad-potion-9", name: "Mirror Draft III", cost: 420, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 26, singleUse: false, permanent: false, unlockRolls: 500, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 26 clicks." },
+            { id: "quad-potion-10", name: "Prism Dose I", cost: 620, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 30, singleUse: false, permanent: false, unlockRolls: 700, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 30 clicks." },
+            { id: "quad-potion-11", name: "Prism Dose II", cost: 900, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 36, singleUse: false, permanent: false, unlockRolls: 980, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 36 clicks." },
+            { id: "quad-potion-12", name: "Prism Dose III", cost: 1300, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 42, singleUse: false, permanent: false, unlockRolls: 1350, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 42 clicks." },
+            { id: "quad-potion-13", name: "Zen Vein I", cost: 1900, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 50, singleUse: false, permanent: false, unlockRolls: 1850, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 50 clicks." },
+            { id: "quad-potion-14", name: "Zen Vein II", cost: 2800, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 60, singleUse: false, permanent: false, unlockRolls: 2450, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 60 clicks." },
+            { id: "quad-potion-15", name: "Zen Vein III", cost: 4200, luck: 0, luckMultiplier: 2, rollsPerClick: 4, durationClicks: 72, singleUse: false, permanent: false, unlockRolls: 3200, maxPurchases: 999999, description: "Doubles luck and turns one press into 4 rolls for 72 clicks." }
         ];
     }
 
@@ -512,6 +513,13 @@
                 if (typeof this.state.activeBoosts[index].rollsPerClick !== "number" || this.state.activeBoosts[index].rollsPerClick < 1) {
                     this.state.activeBoosts[index].rollsPerClick = 1;
                 }
+                if (this.state.activeBoosts[index].id.indexOf("quad-potion-") === 0 && typeof this.state.activeBoosts[index].luckMultiplier !== "number") {
+                    this.state.activeBoosts[index].luck = 0;
+                    this.state.activeBoosts[index].luckMultiplier = 2;
+                }
+                if (typeof this.state.activeBoosts[index].luckMultiplier !== "number" || this.state.activeBoosts[index].luckMultiplier < 1) {
+                    this.state.activeBoosts[index].luckMultiplier = 1;
+                }
                 activeBoosts.push(this.state.activeBoosts[index]);
             }
         }
@@ -657,7 +665,7 @@
             name: booster.name,
             description: booster.permanent
                 ? "Permanent luck increased by " + safeFormatNumber(booster.luck) + "."
-                : "Activated for " + safeFormatNumber(booster.durationClicks) + " click" + (booster.durationClicks === 1 ? "" : "s") + (booster.rollsPerClick > 1 ? " with " + safeFormatNumber(booster.rollsPerClick) + " rolls per press." : ".")
+                : "Activated for " + safeFormatNumber(booster.durationClicks) + " click" + (booster.durationClicks === 1 ? "" : "s") + (booster.luckMultiplier > 1 ? " with " + safeFormatNumber(booster.luckMultiplier) + "x luck" : "") + (booster.rollsPerClick > 1 ? " and " + safeFormatNumber(booster.rollsPerClick) + " rolls per press." : ".")
         });
         this.emit("update", this.getSnapshot());
     };
@@ -667,17 +675,27 @@
         var positive = this.randomInt(0, 1) === 1;
         var delta = positive ? value : -value;
 
-        this.state.coins += 1000;
+        if (this.state.coins < LUCK_MACHINE_COST) {
+            this.emit("toast", {
+                name: "Insufficient funds",
+                description: "Insufficient funds. The Luck Machine costs " + safeFormatNumber(LUCK_MACHINE_COST) + " coins."
+            });
+            this.emit("update", this.getSnapshot());
+            return;
+        }
+
+        this.state.coins -= LUCK_MACHINE_COST;
         this.state.permanentLuck += delta;
         this.lastSaveSucceeded = this.storage.save(this.state);
         this.emit("luckSpin", {
             value: value,
             delta: delta,
-            positive: positive
+            positive: positive,
+            coinsAfter: this.state.coins
         });
         this.emit("toast", {
             name: positive ? "Green Machine Hit" : "Red Machine Hit",
-            description: (positive ? "+" : "-") + safeFormatNumber(value) + " permanent luck. 1,000 coins added."
+            description: (positive ? "+" : "-") + safeFormatNumber(value) + " permanent luck. " + safeFormatNumber(LUCK_MACHINE_COST) + " coins spent."
         });
         this.emit("update", this.getSnapshot());
     };
@@ -686,6 +704,7 @@
         this.state.activeBoosts.push({
             id: booster.id,
             luck: booster.luck,
+            luckMultiplier: booster.luckMultiplier || 1,
             remaining: booster.durationClicks,
             name: booster.name,
             rollsPerClick: booster.rollsPerClick || 1
@@ -693,15 +712,20 @@
         if (booster.luck > this.state.highestTemporaryLuck) {
             this.state.highestTemporaryLuck = booster.luck;
         }
+        if (this.getTotalLuck() > this.state.highestTemporaryLuck) {
+            this.state.highestTemporaryLuck = this.getTotalLuck();
+        }
     };
 
     NumberEngine.prototype.getTotalLuck = function () {
         var total = this.state.permanentLuck;
+        var multiplier = 1;
         var index;
         for (index = 0; index < this.state.activeBoosts.length; index += 1) {
             total += this.state.activeBoosts[index].luck;
+            multiplier *= this.state.activeBoosts[index].luckMultiplier || 1;
         }
-        return total;
+        return total * multiplier;
     };
 
     NumberEngine.prototype.consumeActiveBoostCharge = function () {
@@ -877,6 +901,7 @@
             bestFind: this.getFindById(this.state.bestFindId),
             unlockedCount: this.state.unlockedAchievements.length,
             saveOk: this.lastSaveSucceeded || this.storage.getStorage() !== null,
+            luckMachineCost: LUCK_MACHINE_COST,
             boosters: this.getBoosterSnapshot()
         };
     };
@@ -885,11 +910,13 @@
         var names = [];
         var counts = {};
         var strongestRollsPerClick = this.getRollsPerClick();
+        var luckMultiplier = 1;
         var index;
         var boost;
         for (index = 0; index < this.state.activeBoosts.length; index += 1) {
             boost = this.state.activeBoosts[index];
             counts[boost.name] = (counts[boost.name] || 0) + 1;
+            luckMultiplier *= boost.luckMultiplier || 1;
         }
         for (index in counts) {
             if (Object.prototype.hasOwnProperty.call(counts, index)) {
@@ -898,6 +925,9 @@
         }
         if (strongestRollsPerClick > 1) {
             names.push(safeFormatNumber(strongestRollsPerClick) + " rolls/press");
+        }
+        if (luckMultiplier > 1) {
+            names.push(safeFormatNumber(luckMultiplier) + "x luck");
         }
         return names.length > 0 ? names.join(", ") : "None";
     };
@@ -924,6 +954,7 @@
                 name: booster.name,
                 cost: booster.cost,
                 luck: booster.luck,
+                luckMultiplier: booster.luckMultiplier || 1,
                 rollsPerClick: booster.rollsPerClick || 1,
                 durationClicks: booster.durationClicks,
                 singleUse: booster.singleUse,
@@ -969,7 +1000,7 @@
             this.delay = this.context.createDelay();
             this.delayGain = this.context.createGain();
 
-            this.master.gain.value = 0.075;
+            this.master.gain.value = 0.13;
             this.filter.type = "lowpass";
             this.filter.frequency.value = 1400;
             this.delay.delayTime.value = 0.36;
@@ -1024,7 +1055,7 @@
         now = this.context.currentTime;
         chord = this.chords[this.step % this.chords.length];
         this.master.gain.cancelScheduledValues(now);
-        this.master.gain.setTargetAtTime(0.075, now, 0.3);
+        this.master.gain.setTargetAtTime(0.13, now, 0.3);
 
         for (index = 0; index < chord.length; index += 1) {
             this.playTone(chord[index], now + index * 0.045, 3.3, index === 0 ? 0.28 : 0.18);
@@ -1294,6 +1325,13 @@
                 : "Roll to discover one of 5,000 possible finds.";
         }
 
+        if (this.elements.luckSpinButton && !this.elements.luckSpinButton.classList.contains("is-spinning")) {
+            this.elements.luckSpinButton.disabled = snapshot.coins < snapshot.luckMachineCost;
+            this.elements.luckSpinButton.textContent = snapshot.coins < snapshot.luckMachineCost
+                ? "Insufficient funds"
+                : "Spin for " + safeFormatNumber(snapshot.luckMachineCost) + " coins";
+        }
+
         this.renderBoosters(snapshot.boosters);
 
         this.paintBackground(snapshot.backgroundHue);
@@ -1420,6 +1458,8 @@
         }
         if (this.elements.luckSpinButton) {
             this.elements.luckSpinButton.disabled = true;
+            this.elements.luckSpinButton.classList.add("is-spinning");
+            this.elements.luckSpinButton.textContent = "Spinning";
         }
         if (this.elements.luckSpinResult) {
             this.elements.luckSpinResult.textContent = "Spinning";
@@ -1462,10 +1502,14 @@
                 self.elements.luckSpinDelta.textContent = (result.delta >= 0 ? "+" : "") + safeFormatNumber(result.delta) + " luck";
             }
             if (self.elements.luckMachineNote) {
-                self.elements.luckMachineNote.textContent = "Permanent luck changed by " + (result.delta >= 0 ? "+" : "") + safeFormatNumber(result.delta) + ".";
+                self.elements.luckMachineNote.textContent = "Spent " + safeFormatNumber(LUCK_MACHINE_COST) + " coins. Permanent luck changed by " + (result.delta >= 0 ? "+" : "") + safeFormatNumber(result.delta) + ".";
             }
             if (self.elements.luckSpinButton) {
-                self.elements.luckSpinButton.disabled = false;
+                self.elements.luckSpinButton.classList.remove("is-spinning");
+                self.elements.luckSpinButton.disabled = result.coinsAfter < LUCK_MACHINE_COST;
+                self.elements.luckSpinButton.textContent = result.coinsAfter < LUCK_MACHINE_COST
+                    ? "Insufficient funds"
+                    : "Spin for " + safeFormatNumber(LUCK_MACHINE_COST) + " coins";
             }
         }, 1300);
     };
@@ -1488,7 +1532,7 @@
             this.elements.calmMusicButton.classList.toggle("is-on", isOn);
             this.elements.calmMusicButton.setAttribute("aria-pressed", isOn ? "true" : "false");
             this.elements.calmMusicButton.disabled = !isSupported;
-            this.elements.calmMusicButton.textContent = isSupported ? (isOn ? "Calm Music On" : "Calm Music Off") : "No Audio";
+            this.elements.calmMusicButton.textContent = isSupported ? (isOn ? "Pause Calm Music" : "Play Calm Music") : "No Audio";
         }
         if (this.elements.musicToggleText) {
             this.elements.musicToggleText.textContent = "Music";
@@ -1536,31 +1580,53 @@
     };
 
     View.prototype.addSpotifySong = function () {
-        var embedUrl = createSpotifyEmbedUrl(this.elements.spotifyUrlInput.value);
-        var song;
-        if (!embedUrl) {
-            this.setSpotifyMessage("Use a valid open.spotify.com or spotify: link.");
+        var spotifyTarget = createSpotifyTarget(this.elements.spotifyUrlInput.value);
+        var self = this;
+        if (!spotifyTarget) {
+            this.setSpotifyMessage("Use a valid spotify.com, open.spotify.com, spotify.link, or spotify: link.");
             return;
         }
 
-        song = {
-            url: this.elements.spotifyUrlInput.value.trim(),
-            embedUrl: embedUrl,
-            title: this.elements.spotifyTitleInput.value.trim(),
-            artist: this.elements.spotifyArtistInput.value.trim()
-        };
+        this.setSpotifyMessage("Reading Spotify credits...");
+        this.fetchSpotifyCredits(spotifyTarget.externalUrl).then(function (credits) {
+            var title = self.elements.spotifyTitleInput.value.trim() || credits.title || spotifyTarget.label || "Spotify Item";
+            var artist = self.elements.spotifyArtistInput.value.trim() || credits.artist || "Spotify";
+            self.saveSpotifySong({
+                url: self.elements.spotifyUrlInput.value.trim(),
+                embedUrl: spotifyTarget.embedUrl,
+                externalUrl: spotifyTarget.externalUrl,
+                title: title,
+                artist: artist
+            });
+        });
+    };
 
-        if (!song.title || !song.artist) {
-            this.setSpotifyMessage("Add a title and credit before saving.");
-            return;
-        }
-
+    View.prototype.saveSpotifySong = function (song) {
         this.spotifySongs.unshift(song);
         this.activeSpotifyIndex = 0;
         this.saveSpotifySongs();
         this.elements.spotifySongForm.reset();
-        this.setSpotifyMessage("Added: " + song.title + " by " + song.artist + ".");
+        this.setSpotifyMessage("Added: " + song.title + " by " + song.artist + (song.embedUrl ? "." : ". Open it in Spotify to play."));
         this.renderSpotifySongs();
+    };
+
+    View.prototype.fetchSpotifyCredits = function (url) {
+        if (!window.fetch || !url) {
+            return Promise.resolve({});
+        }
+        return window.fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent(url))
+            .then(function (response) {
+                if (!response.ok) {
+                    return {};
+                }
+                return response.json();
+            })
+            .then(function (data) {
+                return parseSpotifyOembedTitle(data && data.title);
+            })
+            .catch(function () {
+                return {};
+            });
     };
 
     View.prototype.playSpotifySong = function (index) {
@@ -1608,7 +1674,7 @@
 
         this.elements.spotifySongList.innerHTML = "";
         if (this.spotifySongs.length === 0) {
-            this.setSpotifyMessage("Add any Spotify track, album, artist, or playlist link.");
+            this.setSpotifyMessage("Paste any Spotify link. Credits are filled automatically when Spotify provides metadata.");
             return;
         }
 
@@ -1650,6 +1716,7 @@
         var song;
         var iframe;
         var credit;
+        var externalLink;
         if (!this.elements.spotifyPlayerHost) {
             return;
         }
@@ -1658,19 +1725,29 @@
             return;
         }
         song = this.spotifySongs[this.activeSpotifyIndex];
-        iframe = document.createElement("iframe");
-        iframe.title = "Spotify player for " + song.title;
-        iframe.src = song.embedUrl;
-        iframe.width = "100%";
-        iframe.height = "152";
-        iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
-        iframe.loading = "lazy";
+        if (song.embedUrl) {
+            iframe = document.createElement("iframe");
+            iframe.title = "Spotify player for " + song.title;
+            iframe.src = song.embedUrl;
+            iframe.width = "100%";
+            iframe.height = "152";
+            iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
+            iframe.loading = "lazy";
+            this.elements.spotifyPlayerHost.appendChild(iframe);
+        } else {
+            externalLink = document.createElement("a");
+            externalLink.className = "spotify-open-link";
+            externalLink.href = song.externalUrl || song.url;
+            externalLink.target = "_blank";
+            externalLink.rel = "noopener";
+            externalLink.textContent = "Open in Spotify";
+            this.elements.spotifyPlayerHost.appendChild(externalLink);
+        }
 
         credit = document.createElement("p");
         credit.className = "spotify-active-credit";
-        credit.textContent = "Credits: " + song.title + " by " + song.artist;
+        credit.textContent = "Credits: " + song.title + " by " + song.artist + ". Press play in the Spotify player to hear it.";
 
-        this.elements.spotifyPlayerHost.appendChild(iframe);
         this.elements.spotifyPlayerHost.appendChild(credit);
     };
 
@@ -1815,27 +1892,41 @@
         return text;
     }
 
-    function createSpotifyEmbedUrl(input) {
+    function createSpotifyTarget(input) {
         var trimmed = String(input || "").trim();
         var spotifyUriMatch;
         var url;
         var parts;
         var type;
         var id;
+        var path;
+        var searchText;
 
         spotifyUriMatch = trimmed.match(/^spotify:(track|album|playlist|artist|episode|show):([A-Za-z0-9]+)$/);
         if (spotifyUriMatch) {
-            return "https://open.spotify.com/embed/" + spotifyUriMatch[1] + "/" + spotifyUriMatch[2];
+            return {
+                embedUrl: "https://open.spotify.com/embed/" + spotifyUriMatch[1] + "/" + spotifyUriMatch[2],
+                externalUrl: "https://open.spotify.com/" + spotifyUriMatch[1] + "/" + spotifyUriMatch[2],
+                label: "Spotify " + spotifyUriMatch[1]
+            };
         }
 
         try {
             url = new URL(trimmed);
         } catch (error) {
-            return "";
+            return null;
         }
 
-        if (url.hostname !== "open.spotify.com") {
-            return "";
+        if (url.hostname !== "open.spotify.com" && url.hostname !== "spotify.com" && url.hostname !== "www.spotify.com" && url.hostname !== "spotify.link") {
+            return null;
+        }
+
+        if (url.hostname === "spotify.link") {
+            return {
+                embedUrl: "",
+                externalUrl: trimmed,
+                label: "Spotify Link"
+            };
         }
 
         parts = url.pathname.split("/").filter(Boolean);
@@ -1847,11 +1938,47 @@
         }
         type = parts[0];
         id = parts[1];
-        if (!id || ["track", "album", "playlist", "artist", "episode", "show"].indexOf(type) === -1) {
-            return "";
+        path = parts.join("/");
+
+        if (id && ["track", "album", "playlist", "artist", "episode", "show"].indexOf(type) !== -1) {
+            return {
+                embedUrl: "https://open.spotify.com/embed/" + type + "/" + id,
+                externalUrl: "https://open.spotify.com/" + type + "/" + id,
+                label: "Spotify " + type
+            };
         }
 
-        return "https://open.spotify.com/embed/" + type + "/" + id;
+        if (!path) {
+            return null;
+        }
+
+        searchText = type === "search" && parts[1] ? decodeURIComponent(parts.slice(1).join(" ")) : "";
+
+        return {
+            embedUrl: "",
+            externalUrl: "https://open.spotify.com/" + path + (url.search || ""),
+            label: searchText || "Spotify Page"
+        };
+    }
+
+    function parseSpotifyOembedTitle(value) {
+        var text = String(value || "").trim();
+        var pieces;
+        if (!text) {
+            return {};
+        }
+        text = text.replace(/^Spotify\s*-\s*/i, "").trim();
+        pieces = text.split(/\s+by\s+/i);
+        if (pieces.length > 1) {
+            return {
+                title: pieces[0].trim(),
+                artist: pieces.slice(1).join(" by ").trim()
+            };
+        }
+        return {
+            title: text,
+            artist: "Spotify"
+        };
     }
 
     function bootstrap() {
