@@ -37,26 +37,26 @@
         {
             id: "pocket-charm",
             name: "Pocket Charm",
-            cost: 25,
-            luck: 15,
-            durationClicks: 25,
+            cost: 500,
+            luck: 235,
+            durationClicks: 20,
             singleUse: false,
             permanent: false,
             unlockRolls: 0,
             maxPurchases: 999999,
-            description: "A cheap charm that adds +15 luck for 25 clicks."
+            description: "A cheap charm that adds +235 luck for 20 clicks."
         },
         {
             id: "glass-potion",
             name: "Glass Potion",
             cost: 250,
-            luck: 120,
+            luck: 190,
             durationClicks: 80,
             singleUse: false,
             permanent: false,
             unlockRolls: 30,
             maxPurchases: 999999,
-            description: "Adds +120 luck for 80 clicks."
+            description: "Adds +190 luck for 80 clicks."
         },
         {
             id: "comet-elixir",
@@ -110,18 +110,18 @@
             id: "void-tonic",
             name: "Void Tonic",
             cost: 10000,
-            luck: 10000,
-            durationClicks: 1,
+            luck: 14302,
+            durationClicks: 4,
             singleUse: true,
             permanent: false,
             unlockRolls: 1500,
-            maxPurchases: 1,
+            maxPurchases: 99,
             description: "Adds +10,000 luck for 1 click only. Single-use for the whole save."
         },
         {
             id: "zenith-tonic",
             name: "Zenith Tonic",
-            cost: 28000,
+            cost: 26000,
             luck: 18000,
             durationClicks: 3,
             singleUse: false,
@@ -193,7 +193,7 @@
         {
             id: "rare-coin-desperation",
             name: "Coin Desperation",
-            description: "Reach 100 coins within 5 minutes.",
+            description: "Reach 10063 coins within 4 minutes.",
             unlockedBy: function (state) {
                 return state.coins >= 100 && state.sessionStartAt > 0 && Date.now() - state.sessionStartAt <= FIVE_MINUTES_MS;
             }
