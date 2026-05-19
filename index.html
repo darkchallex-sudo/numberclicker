@@ -1,80 +1,270 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="k_8hMUz1WBg3cCMdQdZm7UCYXDntfu4kkuUuZHWw9Es" />
+    <meta name="google-site-verification" content="IWy1J4PD94EJ5MSuzzT9sEfWNpkCSiQLxu13ZtIW490" />
     <title>Number Clicker</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
+<div class="app-container">
+    <nav class="top-nav">
+        <button id="backpackButton" class="nav-btn" aria-expanded="false" aria-controls="backpackPanel">
+            <span class="nav-icon">🎒</span>
+            <span>Backpack</span>
+        </button>
+        <button id="luckMachineButton" class="nav-btn" aria-expanded="false" aria-controls="luckMachinePanel">
+            <span class="nav-icon">🎰</span>
+            <span>Luck Machine</span>
+        </button>
+        <button id="coinMachineButton" class="nav-btn" aria-expanded="false" aria-controls="coinMachinePanel">
+            <span class="nav-icon">💰</span>
+            <span>Coin Machine</span>
+        </button>
+        <button id="musicToggleButton" class="nav-btn" aria-expanded="false" aria-controls="musicPanel">
+            <span class="nav-icon">🎵</span>
+            <span id="musicToggleText">Music</span>
+        </button>
+    </nav>
 
-<main class="stage" id="stage">
-    <div class="ambient ambient-a"></div>
-    <div class="ambient ambient-b"></div>
-    <div class="ambient ambient-c"></div>
-
-    <button id="backpackButton" class="backpack-button" type="button" aria-expanded="false" aria-controls="backpackPanel">
-        <span class="backpack-icon" aria-hidden="true">[+]</span>
-        <span>Backpack</span>
-    </button>
-
-    <button id="luckMachineButton" class="luck-machine-button" type="button" aria-expanded="false" aria-controls="luckMachinePanel">
-        <span class="luck-machine-icon" aria-hidden="true">$</span>
-        <span>Luck Machine</span>
-    </button>
-
-    <button id="coinMachineButton" class="coin-machine-button" type="button" aria-expanded="false" aria-controls="coinMachinePanel">
-        <span class="luck-machine-icon coin-machine-icon" aria-hidden="true">$</span>
-        <span>Coin Machine</span>
-    </button>
-
-    <button id="musicToggleButton" class="music-toggle-button" type="button" aria-expanded="false" aria-controls="musicPanel">
-        <span class="music-toggle-icon" aria-hidden="true">~</span>
-        <span id="musicToggleText">Music</span>
-    </button>
-
-    <aside id="musicPanel" class="music-panel hidden" aria-hidden="true">
-        <div class="music-panel-header">
-            <div>
-                <p class="panel-kicker">Background Audio</p>
-                <h2>Music</h2>
-            </div>
-            <button id="closeMusicPanelButton" class="close-panel" type="button">X</button>
+    <aside id="musicPanel" class="panel hidden" aria-hidden="true">
+        <div class="panel-header">
+            <h2>Music</h2>
+            <button id="closeMusicPanelButton" class="close-btn" aria-label="Close music">✕</button>
         </div>
-
-        <button id="calmMusicButton" type="button">Play Calm Music</button>
-
-        <div id="spotifyPlayerHost"></div>
-        <div id="spotifySongList"></div>
+        <button id="calmMusicButton" class="action-btn" aria-pressed="false">Play Calm Music</button>
+        <form id="spotifySongForm" class="spotify-form">
+            <label>
+                <span>Spotify link</span>
+                <input id="spotifyUrlInput" type="url" placeholder="https://open.spotify.com/..." required>
+            </label>
+            <label>
+                <span>Song title</span>
+                <input id="spotifyTitleInput" type="text" placeholder="Auto-filled">
+            </label>
+            <label>
+                <span>Artist</span>
+                <input id="spotifyArtistInput" type="text" placeholder="Optional">
+            </label>
+            <button class="action-btn" type="submit">Add From Spotify</button>
+        </form>
+        <p id="spotifyMessage" class="info-text">Paste any Spotify link. Credits are filled automatically.</p>
+        <div id="spotifyPlayerHost" class="spotify-player"></div>
+        <div id="spotifySongList" class="song-list"></div>
     </aside>
 
-    <section class="core">
-        <p class="hint">Click the button. Chase the impossible.</p>
+    <aside id="backpackPanel" class="panel hidden" aria-hidden="true">
+        <div class="panel-header">
+            <h2>Backpack</h2>
+            <button id="closeBackpackButton" class="close-btn" aria-label="Close backpack">✕</button>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Coins</span>
+                <strong id="coinValue">0</strong>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Total Luck</span>
+                <strong id="luckValue">0</strong>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Last Roll</span>
+                <strong id="lastRollValue">0</strong>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Best Roll</span>
+                <strong id="bestRollValue">0</strong>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Active Timer</span>
+                <strong id="activeTimerValue">None</strong>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Active Booster</span>
+                <strong id="activeBoosterValue">None</strong>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Total Rolls</span>
+                <strong id="totalRollsValue">0</strong>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Best Find</span>
+                <strong id="bestFindValue">None</strong>
+            </div>
+        </div>
+        <p class="info-text">You earn 150 coins every 10 clicks. Luck is added to every roll.</p>
+        <div class="find-section">
+            <p class="find-label">Latest Find</p>
+            <h3 id="latestFindValue">None yet</h3>
+            <p id="latestFindMeta" class="find-meta">Roll to discover one of 5,000 possible finds.</p>
+        </div>
+        <div id="boosterList" class="booster-list"></div>
+    </aside>
 
-        <div class="number-wrap">
-            <span class="number-label">Number</span>
+    <aside id="luckMachinePanel" class="panel hidden" aria-hidden="true">
+        <div class="panel-header">
+            <h2>Luck Machine</h2>
+            <button id="closeLuckMachineButton" class="close-btn" aria-label="Close luck machine">✕</button>
+        </div>
+        <div id="luckMachineCabinet" class="slot-machine" aria-live="polite">
+            <div class="slot-header">
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
+                <strong>777</strong>
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
+            </div>
+            <div class="slot-display">
+                <div class="slot-reels">
+                    <div id="luckReelA" class="slot-reel">0</div>
+                    <div id="luckReelB" class="slot-reel">0</div>
+                    <div id="luckReelC" class="slot-reel">0</div>
+                </div>
+                <div class="slot-result">
+                    <span id="luckSpinResult">Ready</span>
+                    <span id="luckSpinDelta">+0 luck</span>
+                </div>
+            </div>
+        </div>
+        <div class="machine-actions">
+            <button id="luckSpinButton" class="action-btn primary">Spin for 1000 coins</button>
+            <p id="luckMachineNote" class="info-text">Spend 1,000 coins to spin 0-999. Green adds permanent luck, red removes it.</p>
+        </div>
+        <div id="adminPanel" class="admin-panel hidden" aria-hidden="true">
+            <div class="admin-header">
+                <h3>Admin Panel</h3>
+            </div>
+            <div class="admin-grid">
+                <button type="button" data-admin-action="coins">+1B Coins</button>
+                <button type="button" data-admin-action="luck">+1M Luck</button>
+                <button type="button" data-admin-action="rolls">+100K Rolls</button>
+                <button type="button" data-admin-action="clicks">+100K Clicks</button>
+                <button type="button" data-admin-action="milestone-10k">Hit 10K</button>
+                <button type="button" data-admin-action="milestone-5b">Hit 5B</button>
+                <button type="button" data-admin-action="boosters">Stack Boosters</button>
+                <button type="button" data-admin-action="finds">Best Find</button>
+                <button type="button" data-admin-action="achievements">All Achievements</button>
+                <button type="button" data-admin-action="max">Max Save</button>
+            </div>
+        </div>
+    </aside>
+
+    <aside id="coinMachinePanel" class="panel hidden" aria-hidden="true">
+        <div class="panel-header">
+            <h2>Coin Machine</h2>
+            <button id="closeCoinMachineButton" class="close-btn" aria-label="Close coin machine">✕</button>
+        </div>
+        <div id="coinMachineCabinet" class="slot-machine coin-machine" aria-live="polite">
+            <div class="slot-header">
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
+                <strong>$$$</strong>
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
+            </div>
+            <div class="slot-display">
+                <div class="slot-reels">
+                    <div id="coinReelA" class="slot-reel">0</div>
+                    <div id="coinReelB" class="slot-reel">0</div>
+                    <div id="coinReelC" class="slot-reel">0</div>
+                </div>
+                <div class="slot-result">
+                    <span id="coinSpinResult">Ready</span>
+                    <span id="coinSpinDelta">+0 coins</span>
+                </div>
+            </div>
+        </div>
+        <div class="machine-actions">
+            <button id="coinSpinButton" class="action-btn primary">Spin for 1000 luck</button>
+            <p id="coinMachineNote" class="info-text">Spend 1,000 permanent luck to spin 0-999. Green adds coins, red removes coins.</p>
+        </div>
+    </aside>
+
+    <main class="game-area">
+        <div class="number-display">
+            <span class="display-label">Number</span>
             <h1 id="numberValue">0</h1>
         </div>
+        <button id="clickButton" class="main-btn" type="button">Generate Number</button>
+        <p id="saveText" class="status-text">Checking save status...</p>
+        <p id="microText" class="info-text">120 achievements exist. Some of them will wake up the screen.</p>
+        <p id="findText" class="info-text">Current best find: None</p>
+    </main>
 
-        <button id="clickButton" class="click-button" type="button">Generate Number</button>
+    <div id="toastHost" class="toast-container" aria-live="polite" aria-label="Achievement notifications"></div>
 
-        <p id="saveText">Checking save status...</p>
-        <p id="microText">120 achievements exist. Some of them will wake up the screen.</p>
-        <p id="findText">Current best find: None</p>
-    </section>
-
-</main>
+    <div id="cutsceneOverlay" class="cutscene-overlay hidden" aria-hidden="true">
+        <div class="cutscene-blackout"></div>
+        <div class="cutscene-backdrop"></div>
+        <div class="cutscene-grid"></div>
+        <div class="cutscene-stars"></div>
+        <div class="cutscene-aurora"></div>
+        <div class="cutscene-halo"></div>
+        <div class="cutscene-smear"></div>
+        <div class="cutscene-burst burst-a"></div>
+        <div class="cutscene-burst burst-b"></div>
+        <div class="cutscene-burst burst-c"></div>
+        <div class="cutscene-beams">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="cutscene-shards">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="cutscene-cracks">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="cutscene-rings">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="cutscene-meter">
+            <span class="cutscene-meter-fill"></span>
+        </div>
+        <div class="cutscene-panel">
+            <p class="cutscene-kicker">Milestone Cutscene</p>
+            <h2 id="cutsceneTitle">Awakened</h2>
+            <p id="cutsceneSubtitle" class="cutscene-subtitle"></p>
+            <p id="cutsceneValue" class="cutscene-value"></p>
+            <div id="cutsceneSequence" class="cutscene-sequence hidden" aria-live="polite">
+                <p id="cutscenePhase" class="cutscene-phase"></p>
+                <p id="cutsceneMonologue" class="cutscene-monologue"></p>
+            </div>
+        </div>
+    </div>
+</div>
 
 <template id="boosterTemplate">
     <article class="booster-card">
-        <h3 class="booster-name"></h3>
-        <p class="booster-description"></p>
-        <button class="booster-buy" type="button">Buy</button>
+        <div>
+            <h3 class="booster-name"></h3>
+            <p class="booster-description"></p>
+        </div>
+        <div class="booster-actions">
+            <span class="booster-owned"></span>
+            <button class="booster-buy" type="button">Buy</button>
+        </div>
     </article>
 </template>
 
 <script src="script.js"></script>
-
 </body>
 </html>
