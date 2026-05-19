@@ -1406,8 +1406,21 @@
 
     View.prototype.bind = function () {
         var self = this;
+        var lastClickTime = 0;
+        var clickCooldown = 500; // 500ms cooldown
+
+        // Disable right-click on the entire page
+        document.addEventListener("contextmenu", function (event) {
+            event.preventDefault();
+        });
+
         if (this.elements.button) {
             this.elements.button.addEventListener("click", function () {
+                var now = Date.now();
+                if (now - lastClickTime < clickCooldown) {
+                    return;
+                }
+                lastClickTime = now;
                 self.engine.click();
                 self.pulseNumber();
             });
