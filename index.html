@@ -22,6 +22,11 @@
         <span>Luck Machine</span>
     </button>
 
+    <button id="coinMachineButton" class="coin-machine-button" type="button" aria-expanded="false" aria-controls="coinMachinePanel">
+        <span class="luck-machine-icon coin-machine-icon" aria-hidden="true">$</span>
+        <span>Coin Machine</span>
+    </button>
+
     <button id="musicToggleButton" class="music-toggle-button" type="button" aria-expanded="false" aria-controls="musicPanel">
         <span class="music-toggle-icon" aria-hidden="true">~</span>
         <span id="musicToggleText">Music</span>
@@ -176,6 +181,57 @@
         </div>
     </aside>
 
+    <aside id="coinMachinePanel" class="luck-machine-panel coin-machine-panel hidden" aria-hidden="true">
+        <div class="panel-header">
+            <div>
+                <p class="panel-kicker">Luck to Coins</p>
+                <h2>Coin Machine</h2>
+            </div>
+            <button id="closeCoinMachineButton" class="close-panel" type="button" aria-label="Close coin machine">X</button>
+        </div>
+        <div id="coinMachineCabinet" class="luck-cabinet coin-cabinet" aria-live="polite">
+            <div class="cabinet-crown">
+                <span class="cabinet-light"></span>
+                <span class="cabinet-light"></span>
+                <span class="cabinet-light"></span>
+                <strong>$$$</strong>
+                <span class="cabinet-light"></span>
+                <span class="cabinet-light"></span>
+                <span class="cabinet-light"></span>
+            </div>
+            <div class="cabinet-face">
+                <div class="machine-glow"></div>
+                <div class="machine-reels">
+                    <div id="coinReelA" class="luck-reel reel-green">0</div>
+                    <div id="coinReelB" class="luck-reel reel-green">0</div>
+                    <div id="coinReelC" class="luck-reel reel-green">0</div>
+                </div>
+                <div class="machine-plate">
+                    <span id="coinSpinResult">Ready</span>
+                    <span id="coinSpinDelta">+0 coins</span>
+                </div>
+                <div class="metal-bolts" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            <div class="machine-lower">
+                <div class="coin-slot">
+                    <span></span>
+                </div>
+                <div class="machine-lever" aria-hidden="true">
+                    <span></span>
+                </div>
+            </div>
+        </div>
+        <div class="luck-machine-actions">
+            <button id="coinSpinButton" class="luck-spin-button" type="button">Spin for 1000 luck</button>
+            <p id="coinMachineNote" class="luck-machine-note">Spend 1,000 permanent luck to spin 0-999. Green adds coins, red removes coins.</p>
+        </div>
+    </aside>
+
     <section class="core">
         <p class="hint">Click the button. Chase the impossible.</p>
         <div class="number-wrap">
@@ -209,6 +265,13 @@
         </div>
         <div class="cutscene-shards">
             <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="cutscene-cracks">
             <span></span>
             <span></span>
             <span></span>
