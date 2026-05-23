@@ -42,10 +42,11 @@
     var CLICKS_PER_COIN_BLOCK = 10;
     var LUCK_MACHINE_COST = 1000;
     var COIN_MACHINE_COST = 1000;
-    var CRITICAL_CLICK_CHANCE = 0.1;
+    var CRITICAL_CLICK_CHANCE = 1 / 120;
     var CRITICAL_CLICK_MIN_LUCK = 250;
-    var CRITICAL_CLICK_MAX_LUCK = 25000;
+    var CRITICAL_CLICK_MAX_LUCK = 24000;
     var CRITICAL_CLICK_DURATION_CLICKS = 20;
+    var CRITICAL_CLICK_GUARANTEE_MS = 15 * 60 * 1000;
     var BUILT_IN_TRACKS = [
         {
             id: "night-drive",
@@ -260,7 +261,7 @@
             maxPurchases: 999999,
             description: "Adds +50,000,000 luck for 3 clicks."
         }
-    ].concat(createQuadPotions());
+    ].concat(createQuadPotions(), createHundredRollPotions());
 
     var CUTSCENE_MILESTONES = createCutsceneMilestones();
     var DEFAULT_CUTSCENE_DURATION_MS = 7600;
@@ -422,6 +423,14 @@
         ];
     }
 
+    function createHundredRollPotions() {
+        return [
+            { id: "hundred-roll-potion-1", name: "Hundred Burst I", cost: 10000, luck: 0, luckMultiplier: 1, rollsPerClick: 100, durationClicks: 100, singleUse: false, permanent: false, unlockRolls: 5000, maxPurchases: 999999, description: "Turns one press into 100 rolls for 100 clicks." },
+            { id: "hundred-roll-potion-2", name: "Hundred Burst II", cost: 12500, luck: 0, luckMultiplier: 1, rollsPerClick: 100, durationClicks: 350, singleUse: false, permanent: false, unlockRolls: 7500, maxPurchases: 999999, description: "Turns one press into 100 rolls for 350 clicks." },
+            { id: "hundred-roll-potion-3", name: "Hundred Burst III", cost: 15000, luck: 0, luckMultiplier: 1, rollsPerClick: 100, durationClicks: 750, singleUse: false, permanent: false, unlockRolls: 10000, maxPurchases: 999999, description: "Turns one press into 100 rolls for 750 clicks." }
+        ];
+    }
+
     function createCutsceneMilestones() {
         var special = {
             10000: { title: "Neon Surge", subtitle: "The screen bends for the first real threshold.", theme: "neon", durationMs: 7600 },
@@ -516,6 +525,7 @@
             totalCoinsSpent: 0,
             totalBoostersBought: 0,
             voidTonicSuccess: false,
+            lastCriticalClickAt: 0,
             recentCutsceneTimestamps: [],
             cutsceneChainCount: 0,
             highestTemporaryLuck: 0,
@@ -572,6 +582,7 @@
                 totalCoinsSpent: typeof parsed.totalCoinsSpent === "number" ? parsed.totalCoinsSpent : fallback.totalCoinsSpent,
                 totalBoostersBought: typeof parsed.totalBoostersBought === "number" ? parsed.totalBoostersBought : fallback.totalBoostersBought,
                 voidTonicSuccess: !!parsed.voidTonicSuccess,
+                lastCriticalClickAt: typeof parsed.lastCriticalClickAt === "number" ? parsed.lastCriticalClickAt : fallback.lastCriticalClickAt,
                 recentCutsceneTimestamps: Array.isArray(parsed.recentCutsceneTimestamps) ? parsed.recentCutsceneTimestamps : [],
                 cutsceneChainCount: typeof parsed.cutsceneChainCount === "number" ? parsed.cutsceneChainCount : fallback.cutsceneChainCount,
                 highestTemporaryLuck: typeof parsed.highestTemporaryLuck === "number" ? parsed.highestTemporaryLuck : fallback.highestTemporaryLuck,
@@ -593,6 +604,20 @@
 
         try {
             storage.setItem(this.key, JSON.stringify(state));
+            return true;
+        } catch (error) {
+            return false;
+        }
+    };
+
+    StorageAdapter.prototype.clear = function () {
+        var storage = this.getStorage();
+        if (!storage) {
+            return false;
+        }
+
+        try {
+            storage.removeItem(this.key);
             return true;
         } catch (error) {
             return false;
@@ -790,12 +815,16 @@
 
     NumberEngine.prototype.tryCriticalClick = function () {
         var luckBoost;
-        if (Math.random() > CRITICAL_CLICK_CHANCE) {
+        var now = Date.now();
+        var lastCriticalAt = this.state.lastCriticalClickAt || this.state.sessionStartAt || now;
+        var guaranteed = now - lastCriticalAt >= CRITICAL_CLICK_GUARANTEE_MS;
+        if (!guaranteed && Math.random() > CRITICAL_CLICK_CHANCE) {
             return;
         }
         luckBoost = this.randomInt(CRITICAL_CLICK_MIN_LUCK, CRITICAL_CLICK_MAX_LUCK);
+        this.state.lastCriticalClickAt = now;
         this.state.activeBoosts.push({
-            id: "critical-click-" + Date.now() + "-" + this.randomInt(1000, 9999),
+            id: "critical-click-" + now + "-" + this.randomInt(1000, 9999),
             luck: luckBoost,
             luckMultiplier: 1,
             remaining: CRITICAL_CLICK_DURATION_CLICKS,
@@ -1013,6 +1042,19 @@
         this.emit("toast", {
             name: "Admin Panel",
             description: message
+        });
+        this.emit("update", this.getSnapshot());
+    };
+
+    NumberEngine.prototype.resetGame = function () {
+        this.storage.clear();
+        this.state = createDefaultState();
+        this.ensureBoosterShape();
+        this.recomputePower();
+        this.lastSaveSucceeded = this.storage.save(this.state);
+        this.emit("toast", {
+            name: "Progress Reset",
+            description: "Your number, coins, boosters, rolls, finds, and achievements were reset."
         });
         this.emit("update", this.getSnapshot());
     };
@@ -1455,10 +1497,63 @@
         oscillator.stop(startAt + duration + 0.08);
     };
 
+    function UISoundPlayer() {
+        this.context = null;
+        this.master = null;
+    }
+
+    UISoundPlayer.prototype.ensureContext = function () {
+        var AudioContextRef = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextRef) {
+            return false;
+        }
+        if (!this.context) {
+            this.context = new AudioContextRef();
+            this.master = this.context.createGain();
+            this.master.gain.value = 0.18;
+            this.master.connect(this.context.destination);
+        }
+        if (this.context.state === "suspended") {
+            this.context.resume();
+        }
+        return true;
+    };
+
+    UISoundPlayer.prototype.playHover = function () {
+        this.playTone(740, 0.045, 0.025, "sine");
+    };
+
+    UISoundPlayer.prototype.playClick = function () {
+        this.playTone(360, 0.055, 0.06, "square");
+        this.playTone(220, 0.075, 0.035, "triangle");
+    };
+
+    UISoundPlayer.prototype.playTone = function (frequency, duration, level, wave) {
+        var now;
+        var oscillator;
+        var gain;
+        if (!this.ensureContext()) {
+            return;
+        }
+        now = this.context.currentTime;
+        oscillator = this.context.createOscillator();
+        gain = this.context.createGain();
+        oscillator.type = wave;
+        oscillator.frequency.setValueAtTime(frequency, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(level, now + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        oscillator.connect(gain);
+        gain.connect(this.master);
+        oscillator.start(now);
+        oscillator.stop(now + duration + 0.02);
+    };
+
     function View(engine) {
         this.engine = engine;
         this.elements = {};
         this.music = new CalmMusicPlayer();
+        this.uiSounds = new UISoundPlayer();
         this.spotifySongs = this.loadSpotifySongs();
         this.commentAccount = this.loadCommentAccount();
         this.comments = this.loadComments();
@@ -1472,12 +1567,14 @@
         this.luckSpinInterval = null;
         this.coinSpinTimer = null;
         this.coinSpinInterval = null;
+        this.hoveredButton = null;
     }
 
     View.prototype.cache = function () {
         this.elements.numberWrap = document.querySelector(".number-display, .number-wrap");
         this.elements.numberValue = document.getElementById("numberValue");
         this.elements.button = document.getElementById("clickButton");
+        this.elements.resetButton = document.getElementById("resetButton");
         this.elements.backpackButton = document.getElementById("backpackButton");
         this.elements.backpackPanel = document.getElementById("backpackPanel");
         this.elements.closeBackpackButton = document.getElementById("closeBackpackButton");
@@ -1539,6 +1636,7 @@
         this.elements.commentSignOutButton = document.getElementById("commentSignOutButton");
         this.elements.commentAuthPanel = document.getElementById("commentAuthPanel");
         this.elements.googleAccountButton = document.getElementById("googleAccountButton");
+        this.elements.googleNameInput = document.getElementById("googleNameInput");
         this.elements.emailAccountForm = document.getElementById("emailAccountForm");
         this.elements.commentNameInput = document.getElementById("commentNameInput");
         this.elements.commentEmailInput = document.getElementById("commentEmailInput");
@@ -1557,23 +1655,34 @@
 
     View.prototype.bind = function () {
         var self = this;
-        var lastClickTime = 0;
-        var clickCooldown = 500; // 500ms cooldown
 
         // Disable right-click on the entire page
         document.addEventListener("contextmenu", function (event) {
             event.preventDefault();
         });
 
+        document.addEventListener("pointerover", function (event) {
+            self.handleButtonHover(event);
+        });
+
+        document.addEventListener("pointerout", function (event) {
+            self.handleButtonLeave(event);
+        });
+
+        document.addEventListener("click", function (event) {
+            self.handleButtonSoundClick(event);
+        }, true);
+
         if (this.elements.button) {
             this.elements.button.addEventListener("click", function () {
-                var now = Date.now();
-                if (now - lastClickTime < clickCooldown) {
-                    return;
-                }
-                lastClickTime = now;
                 self.engine.click();
                 self.pulseNumber();
+            });
+        }
+
+        if (this.elements.resetButton) {
+            this.elements.resetButton.addEventListener("click", function () {
+                self.confirmResetProgress();
             });
         }
 
@@ -1718,7 +1827,7 @@
 
         if (this.elements.googleAccountButton) {
             this.elements.googleAccountButton.addEventListener("click", function () {
-                self.createCommentAccount("Google Player", "google-local@numberclicker.local", "google");
+                self.createCommentAccount(self.elements.googleNameInput.value, "google-local@numberclicker.local", "google");
             });
         }
 
@@ -1771,6 +1880,41 @@
         this.renderComments();
     };
 
+    View.prototype.getEventButton = function (event) {
+        if (!event.target || !event.target.closest) {
+            return null;
+        }
+        return event.target.closest("button");
+    };
+
+    View.prototype.handleButtonHover = function (event) {
+        var button = this.getEventButton(event);
+        if (!button || button.disabled || button === this.hoveredButton) {
+            return;
+        }
+        this.hoveredButton = button;
+        this.uiSounds.playHover();
+    };
+
+    View.prototype.handleButtonLeave = function (event) {
+        var button = this.getEventButton(event);
+        if (!button || button !== this.hoveredButton) {
+            return;
+        }
+        if (event.relatedTarget && button.contains(event.relatedTarget)) {
+            return;
+        }
+        this.hoveredButton = null;
+    };
+
+    View.prototype.handleButtonSoundClick = function (event) {
+        var button = this.getEventButton(event);
+        if (!button || button.disabled) {
+            return;
+        }
+        this.uiSounds.playClick();
+    };
+
     View.prototype.handleAdminSequence = function (event) {
         var key = event.key && event.key.length === 1 ? event.key.toLowerCase() : "";
         if (!key || key < "a" || key > "z") {
@@ -1794,6 +1938,16 @@
             name: "Admin Panel",
             description: "Owner tools unlocked."
         });
+    };
+
+    View.prototype.confirmResetProgress = function () {
+        if (!window.confirm("Warning 1: Resetting will delete your saved progress on this device. Continue?")) {
+            return;
+        }
+        if (!window.confirm("Warning 2: This cannot be undone. Reset everything now?")) {
+            return;
+        }
+        this.engine.resetGame();
     };
 
     View.prototype.render = function (snapshot) {
@@ -2060,7 +2214,11 @@
         var cleanName = this.censorText(String(name || "").trim()).replace(/\s+/g, " ").slice(0, 18);
         var cleanEmail = String(email || "").trim().slice(0, 80);
         if (!cleanName) {
-            cleanName = provider === "google" ? "Google Player" : "Player";
+            this.showToast({
+                name: "Username needed",
+                description: "Choose a username before signing in."
+            });
+            return;
         }
         if (provider !== "google" && cleanEmail.indexOf("@") === -1) {
             this.showToast({
