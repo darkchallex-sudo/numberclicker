@@ -3,103 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="k_8hMUz1WBg3cCMdQdZm7UCYXDntfu4kkuUuZHWw9Es" />
+    <meta name="google-site-verification" content="IWy1J4PD94EJ5MSuzzT9sEfWNpkCSiQLxu13ZtIW490" />
     <title>Number Clicker</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<main class="stage" id="stage">
-    <div class="ambient ambient-a"></div>
-    <div class="ambient ambient-b"></div>
-    <div class="ambient ambient-c"></div>
-
-    <button id="backpackButton" class="backpack-button" type="button" aria-expanded="false" aria-controls="backpackPanel">
-        <span class="backpack-icon" aria-hidden="true">[+]</span>
+<div class="app-container">
+    <button id="backpackButton" class="corner-btn backpack-btn" aria-expanded="false" aria-controls="backpackPanel">
+        <span class="btn-icon">🎒</span>
         <span>Backpack</span>
     </button>
 
-    <button id="luckMachineButton" class="luck-machine-button" type="button" aria-expanded="false" aria-controls="luckMachinePanel">
-        <span class="luck-machine-icon" aria-hidden="true">$</span>
-        <span>Luck Machine</span>
-    </button>
+    <div class="right-stack">
+        <button id="luckMachineButton" class="corner-btn luck-btn" aria-expanded="false" aria-controls="luckMachinePanel">
+            <span class="btn-icon">🎰</span>
+            <span>Luck Machine</span>
+        </button>
+        <button id="coinMachineButton" class="corner-btn coin-btn" aria-expanded="false" aria-controls="coinMachinePanel">
+            <span class="btn-icon">💰</span>
+            <span>Coin Machine</span>
+        </button>
+    </div>
 
-    <button id="musicToggleButton" class="music-toggle-button" type="button" aria-expanded="false" aria-controls="musicPanel">
-        <span class="music-toggle-icon" aria-hidden="true">~</span>
+    <button id="musicToggleButton" class="corner-btn music-btn" aria-expanded="false" aria-controls="musicPanel">
+        <span class="btn-icon">🎵</span>
         <span id="musicToggleText">Music</span>
     </button>
 
-    <aside id="musicPanel" class="music-panel hidden" aria-hidden="true">
-        <div class="music-panel-header">
-            <div>
-                <p class="panel-kicker">Background Audio</p>
-                <h2>Music</h2>
-            </div>
-            <button id="closeMusicPanelButton" class="close-panel" type="button" aria-label="Close music">X</button>
+    <button id="codingTutorialButton" class="corner-btn coding-btn" aria-expanded="false" aria-controls="codingTutorialPanel">
+        <span class="btn-icon">{ }</span>
+        <span>Coding</span>
+    </button>
+
+    <aside id="musicPanel" class="panel hidden" aria-hidden="true">
+        <div class="panel-header">
+            <h2>Music</h2>
+            <button id="closeMusicPanelButton" class="close-btn" aria-label="Close music">✕</button>
         </div>
-        <button id="calmMusicButton" class="calm-music-button" type="button" aria-pressed="false">Play Calm Music</button>
-        <form id="spotifySongForm" class="spotify-song-form">
+        <button id="calmMusicButton" class="action-btn" aria-pressed="false">Play Selected Track</button>
+        <div id="builtInTrackList" class="built-in-track-list" aria-label="Built-in music playlist"></div>
+        <form id="spotifySongForm" class="spotify-form">
             <label>
-                <span>Spotify link or page</span>
-                <input id="spotifyUrlInput" type="url" placeholder="https://open.spotify.com/search/..." required>
+                <span>Spotify song or playlist link</span>
+                <input id="spotifyUrlInput" type="url" placeholder="https://open.spotify.com/track or playlist/..." required>
             </label>
-            <label class="spotify-manual-credit">
-                <span>Song title</span>
-                <input id="spotifyTitleInput" type="text" placeholder="Auto-filled when Spotify provides it">
+            <label>
+                <span>Title</span>
+                <input id="spotifyTitleInput" type="text" placeholder="Auto-filled">
             </label>
-            <label class="spotify-manual-credit">
-                <span>Artist / credits</span>
-                <input id="spotifyArtistInput" type="text" placeholder="Optional extra credits">
+            <label>
+                <span>Artist or creator</span>
+                <input id="spotifyArtistInput" type="text" placeholder="Optional">
             </label>
-            <button class="spotify-add-button" type="submit">Add From Spotify</button>
+            <button class="action-btn" type="submit">Add To Playlist</button>
         </form>
-        <p id="spotifyMessage" class="spotify-message">Paste any Spotify link. Credits are filled automatically when Spotify provides metadata. For Spotify songs, press play inside the Spotify player.</p>
-        <div id="spotifyPlayerHost" class="spotify-player-host"></div>
-        <div id="spotifySongList" class="spotify-song-list"></div>
+        <p id="spotifyMessage" class="info-text">Paste any Spotify song, album, artist, or playlist link. Credits are filled automatically.</p>
+        <div id="spotifyPlayerHost" class="spotify-player"></div>
+        <div id="spotifySongList" class="song-list"></div>
     </aside>
 
-    <aside id="backpackPanel" class="backpack-panel hidden" aria-hidden="true">
+    <aside id="codingTutorialPanel" class="panel hidden" aria-hidden="true">
         <div class="panel-header">
+            <h2>Learn Coding</h2>
+            <button id="closeCodingTutorialButton" class="close-btn" aria-label="Close coding tutorial">x</button>
+        </div>
+        <div class="tutorial-list">
+            <section class="tutorial-card">
+                <h3>Beginner Coding</h3>
+                <ol>
+                    <li>Pick one small project, like a clicker counter or quiz.</li>
+                    <li>Learn variables first: they store numbers, text, and game state.</li>
+                    <li>Use if statements to make choices.</li>
+                    <li>Use functions to group code you need more than once.</li>
+                    <li>Change one thing, test it, then change the next thing.</li>
+                </ol>
+            </section>
+            <section class="tutorial-card">
+                <h3>HTML, CSS, JavaScript</h3>
+                <ol>
+                    <li>HTML creates the buttons, text, panels, and inputs.</li>
+                    <li>CSS controls colors, layout, spacing, and animations.</li>
+                    <li>JavaScript listens for clicks and changes the page.</li>
+                    <li>Try making a button add 1 to a number on screen.</li>
+                    <li>Then add upgrades, saves, sounds, and animations.</li>
+                </ol>
+            </section>
+            <section class="tutorial-card">
+                <h3>Scratch Tutorial</h3>
+                <ol>
+                    <li>Create a sprite and add a when green flag clicked block.</li>
+                    <li>Make a variable named score and set it to 0.</li>
+                    <li>Add when this sprite clicked, then change score by 1.</li>
+                    <li>Add a shop button sprite that buys an upgrade when score is high enough.</li>
+                    <li>Use broadcasts to connect buttons, effects, and game screens.</li>
+                </ol>
+            </section>
+        </div>
+    </aside>
+
+    <section class="comment-box" aria-label="Community comments">
+        <div class="comment-box-header">
             <div>
-                <p class="panel-kicker">Luck Boosters</p>
-                <h2>Backpack</h2>
+                <h2>Comments</h2>
+                <p id="commentAccountStatus">Sign in to chat</p>
             </div>
-            <button id="closeBackpackButton" class="close-panel" type="button" aria-label="Close backpack">X</button>
+            <button id="commentSignOutButton" class="comment-small-btn hidden" type="button">Sign Out</button>
         </div>
-        <div class="panel-stats">
-            <article class="panel-stat">
-                <span>Coins</span>
+
+        <div id="commentAuthPanel" class="comment-auth">
+            <button id="googleAccountButton" class="comment-auth-btn" type="button">Continue With Google</button>
+            <form id="emailAccountForm" class="comment-form">
+                <input id="commentNameInput" type="text" placeholder="Display name" maxlength="18" required>
+                <input id="commentEmailInput" type="email" placeholder="Email" required>
+                <button type="submit">Create Account</button>
+            </form>
+        </div>
+
+        <form id="commentForm" class="comment-form hidden">
+            <textarea id="commentInput" rows="3" maxlength="220" placeholder="@player Add update recommendations here..." required></textarea>
+            <button type="submit">Post Comment</button>
+        </form>
+
+        <div id="commentList" class="comment-list" aria-live="polite"></div>
+    </section>
+
+    <aside id="backpackPanel" class="panel hidden" aria-hidden="true">
+        <div class="panel-header">
+            <h2>Backpack</h2>
+            <button id="closeBackpackButton" class="close-btn" aria-label="Close backpack">✕</button>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Coins</span>
                 <strong id="coinValue">0</strong>
-            </article>
-            <article class="panel-stat">
-                <span>Total Luck</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Total Luck</span>
                 <strong id="luckValue">0</strong>
-            </article>
-            <article class="panel-stat">
-                <span>Last Roll</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Last Roll</span>
                 <strong id="lastRollValue">0</strong>
-            </article>
-            <article class="panel-stat">
-                <span>Best Roll</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Best Roll</span>
                 <strong id="bestRollValue">0</strong>
-            </article>
-            <article class="panel-stat">
-                <span>Active Timer</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Active Timer</span>
                 <strong id="activeTimerValue">None</strong>
-            </article>
-            <article class="panel-stat">
-                <span>Active Booster</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Active Booster</span>
                 <strong id="activeBoosterValue">None</strong>
-            </article>
-            <article class="panel-stat">
-                <span>Total Rolls</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Total Rolls</span>
                 <strong id="totalRollsValue">0</strong>
-            </article>
-            <article class="panel-stat">
-                <span>Best Find</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Best Find</span>
                 <strong id="bestFindValue">None</strong>
-            </article>
+            </div>
         </div>
-        <p class="panel-note">You earn 150 coins every 10 clicks. Luck is added to every roll.</p>
-        <div class="find-panel">
+        <p class="info-text">You earn 150 coins every 10 clicks. Luck is added to every roll.</p>
+        <div class="find-section">
             <p class="find-label">Latest Find</p>
             <h3 id="latestFindValue">None yet</h3>
             <p id="latestFindMeta" class="find-meta">Roll to discover one of 5,000 possible finds.</p>
@@ -107,58 +176,39 @@
         <div id="boosterList" class="booster-list"></div>
     </aside>
 
-    <aside id="luckMachinePanel" class="luck-machine-panel hidden" aria-hidden="true">
+    <aside id="luckMachinePanel" class="panel hidden" aria-hidden="true">
         <div class="panel-header">
-            <div>
-                <p class="panel-kicker">Permanent Luck</p>
-                <h2>Luck Machine</h2>
-            </div>
-            <button id="closeLuckMachineButton" class="close-panel" type="button" aria-label="Close luck machine">X</button>
+            <h2>Luck Machine</h2>
+            <button id="closeLuckMachineButton" class="close-btn" aria-label="Close luck machine">✕</button>
         </div>
-        <div id="luckMachineCabinet" class="luck-cabinet" aria-live="polite">
-            <div class="cabinet-crown">
-                <span class="cabinet-light"></span>
-                <span class="cabinet-light"></span>
-                <span class="cabinet-light"></span>
+        <div id="luckMachineCabinet" class="slot-machine" aria-live="polite">
+            <div class="slot-header">
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
                 <strong>777</strong>
-                <span class="cabinet-light"></span>
-                <span class="cabinet-light"></span>
-                <span class="cabinet-light"></span>
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
             </div>
-            <div class="cabinet-face">
-                <div class="machine-glow"></div>
-                <div class="machine-reels">
-                    <div id="luckReelA" class="luck-reel reel-green">0</div>
-                    <div id="luckReelB" class="luck-reel reel-green">0</div>
-                    <div id="luckReelC" class="luck-reel reel-green">0</div>
+            <div class="slot-display">
+                <div class="slot-reels">
+                    <div id="luckReelA" class="slot-reel">0</div>
+                    <div id="luckReelB" class="slot-reel">0</div>
+                    <div id="luckReelC" class="slot-reel">0</div>
                 </div>
-                <div class="machine-plate">
+                <div class="slot-result">
                     <span id="luckSpinResult">Ready</span>
                     <span id="luckSpinDelta">+0 luck</span>
                 </div>
-                <div class="metal-bolts" aria-hidden="true">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
-            <div class="machine-lower">
-                <div class="coin-slot">
-                    <span></span>
-                </div>
-                <div class="machine-lever" aria-hidden="true">
-                    <span></span>
-                </div>
             </div>
         </div>
-        <div class="luck-machine-actions">
-            <button id="luckSpinButton" class="luck-spin-button" type="button">Spin for 1000 coins</button>
-            <p id="luckMachineNote" class="luck-machine-note">Spend 1,000 coins to spin 0-999. Green adds permanent luck, red removes it.</p>
+        <div class="machine-actions">
+            <button id="luckSpinButton" class="action-btn primary">Spin for 1000 coins</button>
+            <p id="luckMachineNote" class="info-text">Spend 1,000 coins to spin 0-999. Green adds permanent luck, red removes it.</p>
         </div>
         <div id="adminPanel" class="admin-panel hidden" aria-hidden="true">
-            <div class="admin-panel-header">
-                <p class="panel-kicker">Owner Tools</p>
+            <div class="admin-header">
                 <h3>Admin Panel</h3>
             </div>
             <div class="admin-grid">
@@ -176,21 +226,53 @@
         </div>
     </aside>
 
-    <section class="core">
-        <p class="hint">Click the button. Chase the impossible.</p>
-        <div class="number-wrap">
-            <span class="number-label">Number</span>
+    <aside id="coinMachinePanel" class="panel hidden" aria-hidden="true">
+        <div class="panel-header">
+            <h2>Coin Machine</h2>
+            <button id="closeCoinMachineButton" class="close-btn" aria-label="Close coin machine">✕</button>
+        </div>
+        <div id="coinMachineCabinet" class="slot-machine coin-machine" aria-live="polite">
+            <div class="slot-header">
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
+                <strong>$$$</strong>
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
+                <span class="slot-light"></span>
+            </div>
+            <div class="slot-display">
+                <div class="slot-reels">
+                    <div id="coinReelA" class="slot-reel">0</div>
+                    <div id="coinReelB" class="slot-reel">0</div>
+                    <div id="coinReelC" class="slot-reel">0</div>
+                </div>
+                <div class="slot-result">
+                    <span id="coinSpinResult">Ready</span>
+                    <span id="coinSpinDelta">+0 coins</span>
+                </div>
+            </div>
+        </div>
+        <div class="machine-actions">
+            <button id="coinSpinButton" class="action-btn primary">Spin for 1000 luck</button>
+            <p id="coinMachineNote" class="info-text">Spend 1,000 permanent luck to spin 0-999. Green adds coins, red removes coins.</p>
+        </div>
+    </aside>
+
+    <main class="game-area">
+        <div class="number-display">
+            <span class="display-label">Number</span>
             <h1 id="numberValue">0</h1>
         </div>
-        <button id="clickButton" class="click-button" type="button">Generate Number</button>
-        <p id="saveText" class="save-text">Checking save status...</p>
-        <p id="microText" class="micro-text">120 achievements exist. Some of them will wake up the screen.</p>
-        <p id="findText" class="micro-text">Current best find: None</p>
-    </section>
+        <button id="clickButton" class="main-btn" type="button">Generate Number</button>
+        <p id="saveText" class="status-text">Checking save status...</p>
+        <p id="microText" class="info-text">120 achievements exist. Some of them will wake up the screen.</p>
+        <p id="findText" class="info-text">Current best find: None</p>
+    </main>
 
-    <section id="toastHost" class="toast-host" aria-live="polite" aria-label="Achievement notifications"></section>
+    <div id="toastHost" class="toast-container" aria-live="polite" aria-label="Achievement notifications"></div>
 
-    <section id="cutsceneOverlay" class="cutscene-overlay hidden" aria-hidden="true">
+    <div id="cutsceneOverlay" class="cutscene-overlay hidden" aria-hidden="true">
         <div class="cutscene-blackout"></div>
         <div class="cutscene-backdrop"></div>
         <div class="cutscene-grid"></div>
@@ -215,6 +297,13 @@
             <span></span>
             <span></span>
         </div>
+        <div class="cutscene-cracks">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
         <div class="cutscene-rings">
             <span></span>
             <span></span>
@@ -233,8 +322,8 @@
                 <p id="cutsceneMonologue" class="cutscene-monologue"></p>
             </div>
         </div>
-    </section>
-</main>
+    </div>
+</div>
 
 <template id="boosterTemplate">
     <article class="booster-card">
