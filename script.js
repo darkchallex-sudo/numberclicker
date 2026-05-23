@@ -3,7 +3,22 @@
 
     var SAVE_KEY = "number-clicker-engine-v3";
     var SPOTIFY_LIBRARY_KEY = "number-clicker-spotify-songs-v1";
+    var COMMENT_ACCOUNT_KEY = "number-clicker-comment-account-v1";
+    var COMMENT_LIST_KEY = "number-clicker-comments-v1";
     var TOTAL_ACHIEVEMENTS = 120;
+    var BAD_WORDS = [
+        "fuck",
+        "shit",
+        "bitch",
+        "asshole",
+        "bastard",
+        "damn",
+        "crap",
+        "dick",
+        "piss",
+        "slut",
+        "whore"
+    ];
 
     var NUMBER_MILESTONES = [
         1, 2, 3, 5, 7, 10, 15, 20, 30, 40,
@@ -27,6 +42,84 @@
     var CLICKS_PER_COIN_BLOCK = 10;
     var LUCK_MACHINE_COST = 1000;
     var COIN_MACHINE_COST = 1000;
+    var CRITICAL_CLICK_CHANCE = 0.1;
+    var CRITICAL_CLICK_MIN_LUCK = 250;
+    var CRITICAL_CLICK_MAX_LUCK = 25000;
+    var CRITICAL_CLICK_DURATION_CLICKS = 20;
+    var BUILT_IN_TRACKS = [
+        {
+            id: "night-drive",
+            name: "Night Drive",
+            mood: "lo-fi focus",
+            interval: 2200,
+            wave: "triangle",
+            volume: 0.16,
+            filter: 1800,
+            delay: 0.28,
+            delayGain: 0.16,
+            chords: [
+                [196.00, 246.94, 293.66, 369.99],
+                [174.61, 220.00, 261.63, 329.63],
+                [207.65, 261.63, 311.13, 392.00],
+                [164.81, 207.65, 246.94, 329.63]
+            ],
+            lead: [392.00, 493.88, 440.00, 369.99, 392.00, 587.33]
+        },
+        {
+            id: "crystal-rain",
+            name: "Crystal Rain",
+            mood: "soft calm",
+            interval: 3000,
+            wave: "sine",
+            volume: 0.14,
+            filter: 1500,
+            delay: 0.42,
+            delayGain: 0.22,
+            chords: [
+                [261.63, 329.63, 392.00, 493.88],
+                [220.00, 293.66, 349.23, 440.00],
+                [246.94, 311.13, 392.00, 466.16],
+                [196.00, 261.63, 329.63, 392.00]
+            ],
+            lead: [659.25, 587.33, 493.88, 523.25, 440.00]
+        },
+        {
+            id: "neon-peak",
+            name: "Neon Peak",
+            mood: "peak energy",
+            interval: 1650,
+            wave: "sawtooth",
+            volume: 0.12,
+            filter: 2400,
+            delay: 0.2,
+            delayGain: 0.12,
+            chords: [
+                [130.81, 196.00, 261.63, 329.63],
+                [146.83, 220.00, 293.66, 369.99],
+                [164.81, 246.94, 329.63, 415.30],
+                [123.47, 185.00, 246.94, 311.13]
+            ],
+            lead: [523.25, 659.25, 783.99, 659.25, 587.33, 783.99, 880.00]
+        },
+        {
+            id: "deep-space",
+            name: "Deep Space",
+            mood: "ambient",
+            interval: 3800,
+            wave: "sine",
+            volume: 0.15,
+            filter: 1100,
+            delay: 0.55,
+            delayGain: 0.26,
+            chords: [
+                [146.83, 220.00, 277.18, 369.99],
+                [164.81, 246.94, 311.13, 415.30],
+                [138.59, 207.65, 261.63, 349.23],
+                [185.00, 277.18, 349.23, 466.16]
+            ],
+            lead: [554.37, 466.16, 415.30, 622.25]
+        }
+    ];
     var FIVE_MINUTES_MS = 5 * 60 * 1000;
     var ONE_MINUTE_MS = 60 * 1000;
     var TEN_MINUTES_MS = 10 * 60 * 1000;
@@ -38,9 +131,6 @@
         {
             id: "pocket-charm",
             name: "Pocket Charm",
-            cost: 500,
-            luck: 235,
-            durationClicks: 20,
             cost: 25,
             luck: 15,
             durationClicks: 25,
@@ -48,21 +138,18 @@
             permanent: false,
             unlockRolls: 0,
             maxPurchases: 999999,
-            description: "A cheap charm that adds +235 luck for 20 clicks."
             description: "A cheap charm that adds +15 luck for 25 clicks."
         },
         {
             id: "glass-potion",
             name: "Glass Potion",
             cost: 250,
-            luck: 190,
             luck: 120,
             durationClicks: 80,
             singleUse: false,
             permanent: false,
             unlockRolls: 30,
             maxPurchases: 999999,
-            description: "Adds +190 luck for 80 clicks."
             description: "Adds +120 luck for 80 clicks."
         },
         {
@@ -117,21 +204,17 @@
             id: "void-tonic",
             name: "Void Tonic",
             cost: 10000,
-            luck: 14302,
-            durationClicks: 4,
             luck: 10000,
             durationClicks: 1,
             singleUse: true,
             permanent: false,
             unlockRolls: 1500,
-            maxPurchases: 99,
             maxPurchases: 1,
             description: "Adds +10,000 luck for 1 click only. Single-use for the whole save."
         },
         {
             id: "zenith-tonic",
             name: "Zenith Tonic",
-            cost: 26000,
             cost: 28000,
             luck: 18000,
             durationClicks: 3,
@@ -179,20 +262,6 @@
         }
     ].concat(createQuadPotions());
 
-    var CUTSCENE_MILESTONES = [
-        { value: 10000, title: "Neon Surge", subtitle: "The screen bends for the first real threshold.", theme: "neon", durationMs: 7600 },
-        { value: 50000, title: "Sky Splitter", subtitle: "Color pressure starts tearing through the calm.", theme: "neon", durationMs: 7600 },
-        { value: 100000, title: "Velocity Crown", subtitle: "Your clicks stop feeling local.", theme: "neon", durationMs: 7800 },
-        { value: 500000, title: "Solar Tremor", subtitle: "The atmosphere gives up and starts glowing.", theme: "solar", durationMs: 7800 },
-        { value: 1000000, title: "Radiant Collapse", subtitle: "A million numbers is enough to distort the room.", theme: "solar", durationMs: 8000 },
-        { value: 5000000, title: "Prism Rift", subtitle: "Everything picks a brighter color and stays there.", theme: "solar", durationMs: 8200 },
-        { value: 10000000, title: "Aurora Engine", subtitle: "The game finally looks like it knows your name.", theme: "cosmic", durationMs: 8400 },
-        { value: 50000000, title: "Celestial Overdrive", subtitle: "This is no longer a button. It is an event.", theme: "cosmic", durationMs: 8600 },
-        { value: 100000000, title: "Chromatic Tempest", subtitle: "Pure saturation. Pure noise. Pure momentum.", theme: "cosmic", durationMs: 9000 },
-        { value: 500000000, title: "Thunder Bloom", subtitle: "The cutscene has stopped asking for permission.", theme: "apex", durationMs: 9800 },
-        { value: 1000000000, title: "Apex Corona", subtitle: "You reached the billion line and the world noticed.", theme: "apex", durationMs: 11000 },
-        { value: 5000000000, title: "Absolute Zenith", subtitle: "Five billion does not arrive. It tears the sky open.", theme: "apex", mode: "finale", durationMs: 50000 }
-    ];
     var CUTSCENE_MILESTONES = createCutsceneMilestones();
     var DEFAULT_CUTSCENE_DURATION_MS = 7600;
     var FINALE_CUTSCENE_STEPS = [
@@ -241,7 +310,6 @@
         {
             id: "rare-coin-desperation",
             name: "Coin Desperation",
-            description: "Reach 10063 coins within 4 minutes.",
             description: "Reach 100 coins within 5 minutes.",
             unlockedBy: function (state) {
                 return state.coins >= 100 && state.sessionStartAt > 0 && Date.now() - state.sessionStartAt <= FIVE_MINUTES_MS;
@@ -608,7 +676,9 @@
             update: [],
             toast: [],
             cutscene: [],
-            luckSpin: []
+            luckSpin: [],
+            coinSpin: [],
+            criticalClick: []
         };
         this.lastSaveSucceeded = false;
         this.ensureBoosterShape();
@@ -709,12 +779,40 @@
         }
         this.consumeActiveBoostCharge();
         this.awardCoins(previousCoinBlocks);
+        this.tryCriticalClick();
 
         this.recomputePower();
         this.unlockAchievements();
         this.triggerCutscenes();
         this.lastSaveSucceeded = this.storage.save(this.state);
         this.emit("update", this.getSnapshot());
+    };
+
+    NumberEngine.prototype.tryCriticalClick = function () {
+        var luckBoost;
+        if (Math.random() > CRITICAL_CLICK_CHANCE) {
+            return;
+        }
+        luckBoost = this.randomInt(CRITICAL_CLICK_MIN_LUCK, CRITICAL_CLICK_MAX_LUCK);
+        this.state.activeBoosts.push({
+            id: "critical-click-" + Date.now() + "-" + this.randomInt(1000, 9999),
+            luck: luckBoost,
+            luckMultiplier: 1,
+            remaining: CRITICAL_CLICK_DURATION_CLICKS,
+            name: "Critical Click",
+            rollsPerClick: 1
+        });
+        if (this.getTotalLuck() > this.state.highestTemporaryLuck) {
+            this.state.highestTemporaryLuck = this.getTotalLuck();
+        }
+        this.emit("criticalClick", {
+            luck: luckBoost,
+            durationClicks: CRITICAL_CLICK_DURATION_CLICKS
+        });
+        this.emit("toast", {
+            name: "Critical Click",
+            description: "+" + safeFormatNumber(luckBoost) + " luck for " + safeFormatNumber(CRITICAL_CLICK_DURATION_CLICKS) + " clicks."
+        });
     };
 
     NumberEngine.prototype.randomInt = function (min, max) {
@@ -1245,12 +1343,7 @@
         this.interval = null;
         this.isPlaying = false;
         this.step = 0;
-        this.chords = [
-            [261.63, 329.63, 392.00, 493.88],
-            [220.00, 293.66, 349.23, 440.00],
-            [246.94, 311.13, 392.00, 466.16],
-            [196.00, 261.63, 329.63, 392.00]
-        ];
+        this.track = BUILT_IN_TRACKS[0];
     }
 
     CalmMusicPlayer.prototype.ensureContext = function () {
@@ -1265,11 +1358,11 @@
             this.delay = this.context.createDelay();
             this.delayGain = this.context.createGain();
 
-            this.master.gain.value = 0.13;
+            this.master.gain.value = this.track.volume;
             this.filter.type = "lowpass";
-            this.filter.frequency.value = 1400;
-            this.delay.delayTime.value = 0.36;
-            this.delayGain.gain.value = 0.18;
+            this.filter.frequency.value = this.track.filter;
+            this.delay.delayTime.value = this.track.delay;
+            this.delayGain.gain.value = this.track.delayGain;
 
             this.filter.connect(this.master);
             this.filter.connect(this.delay);
@@ -1278,6 +1371,22 @@
             this.master.connect(this.context.destination);
         }
         return true;
+    };
+
+    CalmMusicPlayer.prototype.setTrack = function (trackId) {
+        var index;
+        for (index = 0; index < BUILT_IN_TRACKS.length; index += 1) {
+            if (BUILT_IN_TRACKS[index].id === trackId) {
+                this.track = BUILT_IN_TRACKS[index];
+                this.step = 0;
+                if (this.context) {
+                    this.filter.frequency.setTargetAtTime(this.track.filter, this.context.currentTime, 0.2);
+                    this.delay.delayTime.setTargetAtTime(this.track.delay, this.context.currentTime, 0.2);
+                    this.delayGain.gain.setTargetAtTime(this.track.delayGain, this.context.currentTime, 0.2);
+                }
+                return;
+            }
+        }
     };
 
     CalmMusicPlayer.prototype.start = function () {
@@ -1296,7 +1405,7 @@
         this.playStep();
         this.interval = window.setInterval(function () {
             self.playStep();
-        }, 3600);
+        }, this.track.interval);
         return true;
     };
 
@@ -1318,22 +1427,23 @@
             return;
         }
         now = this.context.currentTime;
-        chord = this.chords[this.step % this.chords.length];
+        chord = this.track.chords[this.step % this.track.chords.length];
         this.master.gain.cancelScheduledValues(now);
-        this.master.gain.setTargetAtTime(0.13, now, 0.3);
+        this.master.gain.setTargetAtTime(this.track.volume, now, 0.3);
 
         for (index = 0; index < chord.length; index += 1) {
-            this.playTone(chord[index], now + index * 0.045, 3.3, index === 0 ? 0.28 : 0.18);
+            this.playTone(chord[index], now + index * 0.035, this.track.interval / 1000 + 0.45, index === 0 ? 0.22 : 0.13, this.track.wave);
         }
-        this.playTone(chord[1] * 2, now + 1.15, 1.8, 0.08);
-        this.playTone(chord[2] * 2, now + 2.25, 1.6, 0.07);
+        this.playTone(this.track.lead[this.step % this.track.lead.length], now + 0.5, 0.48, 0.07, this.track.wave);
+        this.playTone(this.track.lead[(this.step + 2) % this.track.lead.length], now + 1.05, 0.42, 0.055, this.track.wave);
+        this.playTone(chord[0] / 2, now + 0.08, 0.22, 0.12, "square");
         this.step += 1;
     };
 
-    CalmMusicPlayer.prototype.playTone = function (frequency, startAt, duration, level) {
+    CalmMusicPlayer.prototype.playTone = function (frequency, startAt, duration, level, wave) {
         var oscillator = this.context.createOscillator();
         var gain = this.context.createGain();
-        oscillator.type = "sine";
+        oscillator.type = wave || "sine";
         oscillator.frequency.setValueAtTime(frequency, startAt);
         oscillator.detune.setValueAtTime((Math.random() * 6) - 3, startAt);
         gain.gain.setValueAtTime(0.0001, startAt);
@@ -1350,6 +1460,8 @@
         this.elements = {};
         this.music = new CalmMusicPlayer();
         this.spotifySongs = this.loadSpotifySongs();
+        this.commentAccount = this.loadCommentAccount();
+        this.comments = this.loadComments();
         this.activeSpotifyIndex = this.spotifySongs.length > 0 ? 0 : -1;
         this.adminSequence = "pplleeaasseeaaddmmiinn";
         this.adminBuffer = "";
@@ -1363,7 +1475,7 @@
     }
 
     View.prototype.cache = function () {
-        this.elements.numberWrap = document.querySelector(".number-wrap");
+        this.elements.numberWrap = document.querySelector(".number-display, .number-wrap");
         this.elements.numberValue = document.getElementById("numberValue");
         this.elements.button = document.getElementById("clickButton");
         this.elements.backpackButton = document.getElementById("backpackButton");
@@ -1379,7 +1491,11 @@
         this.elements.musicToggleText = document.getElementById("musicToggleText");
         this.elements.musicPanel = document.getElementById("musicPanel");
         this.elements.closeMusicPanelButton = document.getElementById("closeMusicPanelButton");
+        this.elements.codingTutorialButton = document.getElementById("codingTutorialButton");
+        this.elements.codingTutorialPanel = document.getElementById("codingTutorialPanel");
+        this.elements.closeCodingTutorialButton = document.getElementById("closeCodingTutorialButton");
         this.elements.calmMusicButton = document.getElementById("calmMusicButton");
+        this.elements.builtInTrackList = document.getElementById("builtInTrackList");
         this.elements.spotifySongForm = document.getElementById("spotifySongForm");
         this.elements.spotifyUrlInput = document.getElementById("spotifyUrlInput");
         this.elements.spotifyTitleInput = document.getElementById("spotifyTitleInput");
@@ -1419,6 +1535,16 @@
         this.elements.latestFindMeta = document.getElementById("latestFindMeta");
         this.elements.boosterList = document.getElementById("boosterList");
         this.elements.boosterTemplate = document.getElementById("boosterTemplate");
+        this.elements.commentAccountStatus = document.getElementById("commentAccountStatus");
+        this.elements.commentSignOutButton = document.getElementById("commentSignOutButton");
+        this.elements.commentAuthPanel = document.getElementById("commentAuthPanel");
+        this.elements.googleAccountButton = document.getElementById("googleAccountButton");
+        this.elements.emailAccountForm = document.getElementById("emailAccountForm");
+        this.elements.commentNameInput = document.getElementById("commentNameInput");
+        this.elements.commentEmailInput = document.getElementById("commentEmailInput");
+        this.elements.commentForm = document.getElementById("commentForm");
+        this.elements.commentInput = document.getElementById("commentInput");
+        this.elements.commentList = document.getElementById("commentList");
         this.elements.toastHost = document.getElementById("toastHost");
         this.elements.cutsceneOverlay = document.getElementById("cutsceneOverlay");
         this.elements.cutsceneTitle = document.getElementById("cutsceneTitle");
@@ -1431,8 +1557,21 @@
 
     View.prototype.bind = function () {
         var self = this;
+        var lastClickTime = 0;
+        var clickCooldown = 500; // 500ms cooldown
+
+        // Disable right-click on the entire page
+        document.addEventListener("contextmenu", function (event) {
+            event.preventDefault();
+        });
+
         if (this.elements.button) {
             this.elements.button.addEventListener("click", function () {
+                var now = Date.now();
+                if (now - lastClickTime < clickCooldown) {
+                    return;
+                }
+                lastClickTime = now;
                 self.engine.click();
                 self.pulseNumber();
             });
@@ -1518,9 +1657,31 @@
             });
         }
 
+        if (this.elements.codingTutorialButton) {
+            this.elements.codingTutorialButton.addEventListener("click", function () {
+                self.toggleCodingTutorial();
+            });
+        }
+
+        if (this.elements.closeCodingTutorialButton) {
+            this.elements.closeCodingTutorialButton.addEventListener("click", function () {
+                self.setCodingTutorialOpen(false);
+            });
+        }
+
         if (this.elements.calmMusicButton) {
             this.elements.calmMusicButton.addEventListener("click", function () {
                 self.toggleMusic();
+            });
+        }
+
+        if (this.elements.builtInTrackList) {
+            this.elements.builtInTrackList.addEventListener("click", function (event) {
+                var button = event.target && event.target.closest ? event.target.closest("[data-track-id]") : null;
+                if (!button) {
+                    return;
+                }
+                self.selectBuiltInTrack(button.getAttribute("data-track-id"));
             });
         }
 
@@ -1555,6 +1716,32 @@
             });
         }
 
+        if (this.elements.googleAccountButton) {
+            this.elements.googleAccountButton.addEventListener("click", function () {
+                self.createCommentAccount("Google Player", "google-local@numberclicker.local", "google");
+            });
+        }
+
+        if (this.elements.emailAccountForm) {
+            this.elements.emailAccountForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+                self.createCommentAccount(self.elements.commentNameInput.value, self.elements.commentEmailInput.value, "email");
+            });
+        }
+
+        if (this.elements.commentSignOutButton) {
+            this.elements.commentSignOutButton.addEventListener("click", function () {
+                self.signOutCommentAccount();
+            });
+        }
+
+        if (this.elements.commentForm) {
+            this.elements.commentForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+                self.postComment();
+            });
+        }
+
         this.engine.on("update", function (snapshot) {
             self.render(snapshot);
         });
@@ -1575,7 +1762,13 @@
             self.playCoinSpin(result);
         });
 
+        this.engine.on("criticalClick", function (result) {
+            self.playCriticalImpact(result);
+        });
+
+        this.renderBuiltInTracks();
         this.renderSpotifySongs();
+        this.renderComments();
     };
 
     View.prototype.handleAdminSequence = function (event) {
@@ -1795,6 +1988,230 @@
         }
     };
 
+    View.prototype.playCriticalImpact = function (result) {
+        var frame = document.createElement("div");
+        var title = document.createElement("strong");
+        var detail = document.createElement("span");
+
+        frame.className = "critical-impact-frame";
+        frame.setAttribute("aria-hidden", "true");
+        title.textContent = "CRITICAL CLICK";
+        detail.textContent = "+" + safeFormatNumber(result.luck) + " luck";
+
+        frame.appendChild(title);
+        frame.appendChild(detail);
+        document.body.appendChild(frame);
+
+        window.setTimeout(function () {
+            if (frame.parentNode) {
+                frame.parentNode.removeChild(frame);
+            }
+        }, 4000);
+    };
+
+    View.prototype.loadCommentAccount = function () {
+        var raw;
+        try {
+            raw = window.localStorage.getItem(COMMENT_ACCOUNT_KEY);
+            return raw ? JSON.parse(raw) : null;
+        } catch (error) {
+            return null;
+        }
+    };
+
+    View.prototype.saveCommentAccount = function () {
+        try {
+            if (this.commentAccount) {
+                window.localStorage.setItem(COMMENT_ACCOUNT_KEY, JSON.stringify(this.commentAccount));
+            } else {
+                window.localStorage.removeItem(COMMENT_ACCOUNT_KEY);
+            }
+        } catch (error) {
+            return false;
+        }
+        return true;
+    };
+
+    View.prototype.loadComments = function () {
+        var raw;
+        var parsed;
+        try {
+            raw = window.localStorage.getItem(COMMENT_LIST_KEY);
+            if (!raw) {
+                return [];
+            }
+            parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed.slice(0, 80) : [];
+        } catch (error) {
+            return [];
+        }
+    };
+
+    View.prototype.saveComments = function () {
+        try {
+            window.localStorage.setItem(COMMENT_LIST_KEY, JSON.stringify(this.comments.slice(0, 80)));
+        } catch (error) {
+            return false;
+        }
+        return true;
+    };
+
+    View.prototype.createCommentAccount = function (name, email, provider) {
+        var cleanName = this.censorText(String(name || "").trim()).replace(/\s+/g, " ").slice(0, 18);
+        var cleanEmail = String(email || "").trim().slice(0, 80);
+        if (!cleanName) {
+            cleanName = provider === "google" ? "Google Player" : "Player";
+        }
+        if (provider !== "google" && cleanEmail.indexOf("@") === -1) {
+            this.showToast({
+                name: "Account needed",
+                description: "Enter a valid email to create a local chat account."
+            });
+            return;
+        }
+        this.commentAccount = {
+            name: cleanName,
+            email: provider === "google" ? "google-local@numberclicker.local" : cleanEmail,
+            provider: provider,
+            createdAt: Date.now()
+        };
+        this.saveCommentAccount();
+        this.renderComments();
+    };
+
+    View.prototype.signOutCommentAccount = function () {
+        this.commentAccount = null;
+        this.saveCommentAccount();
+        this.renderComments();
+    };
+
+    View.prototype.postComment = function () {
+        var text;
+        if (!this.commentAccount) {
+            this.showToast({
+                name: "Sign in required",
+                description: "Create an account before posting comments."
+            });
+            return;
+        }
+        text = this.censorText(String(this.elements.commentInput.value || "").trim()).slice(0, 220);
+        if (!text) {
+            return;
+        }
+        this.comments.unshift({
+            id: Date.now() + "-" + Math.floor(Math.random() * 10000),
+            author: this.commentAccount.name,
+            provider: this.commentAccount.provider,
+            text: text,
+            createdAt: Date.now()
+        });
+        this.comments = this.comments.slice(0, 80);
+        this.saveComments();
+        this.elements.commentInput.value = "";
+        this.renderComments();
+    };
+
+    View.prototype.censorText = function (value) {
+        var filtered = String(value || "");
+        var index;
+        var pattern;
+        for (index = 0; index < BAD_WORDS.length; index += 1) {
+            pattern = new RegExp("\\b" + BAD_WORDS[index] + "\\b", "gi");
+            filtered = filtered.replace(pattern, function (match) {
+                return match.charAt(0) + "*".repeat(Math.max(2, match.length - 1));
+            });
+        }
+        return filtered;
+    };
+
+    View.prototype.renderComments = function () {
+        var fragment;
+        var index;
+        var comment;
+        var article;
+        var meta;
+        var author;
+        var time;
+        var body;
+        if (this.elements.commentAccountStatus) {
+            this.elements.commentAccountStatus.textContent = this.commentAccount
+                ? "Signed in as " + this.commentAccount.name
+                : "Sign in to chat";
+        }
+        if (this.elements.commentAuthPanel) {
+            this.elements.commentAuthPanel.classList.toggle("hidden", !!this.commentAccount);
+        }
+        if (this.elements.commentForm) {
+            this.elements.commentForm.classList.toggle("hidden", !this.commentAccount);
+        }
+        if (this.elements.commentSignOutButton) {
+            this.elements.commentSignOutButton.classList.toggle("hidden", !this.commentAccount);
+        }
+        if (!this.elements.commentList) {
+            return;
+        }
+        this.elements.commentList.innerHTML = "";
+        fragment = document.createDocumentFragment();
+        for (index = 0; index < this.comments.length; index += 1) {
+            comment = this.comments[index];
+            article = document.createElement("article");
+            article.className = "comment-item";
+            meta = document.createElement("div");
+            meta.className = "comment-meta";
+            author = document.createElement("strong");
+            author.textContent = comment.author || "Player";
+            time = document.createElement("span");
+            time.textContent = this.formatCommentTime(comment.createdAt);
+            body = document.createElement("p");
+            this.appendMentionText(body, comment.text || "");
+            meta.appendChild(author);
+            meta.appendChild(time);
+            article.appendChild(meta);
+            article.appendChild(body);
+            fragment.appendChild(article);
+        }
+        if (this.comments.length === 0) {
+            article = document.createElement("article");
+            article.className = "comment-item";
+            article.textContent = "No comments yet. Sign in and recommend an update.";
+            fragment.appendChild(article);
+        }
+        this.elements.commentList.appendChild(fragment);
+    };
+
+    View.prototype.appendMentionText = function (target, text) {
+        var pieces = String(text || "").split(/(@[A-Za-z0-9_]{2,18})/g);
+        var index;
+        var node;
+        for (index = 0; index < pieces.length; index += 1) {
+            if (!pieces[index]) {
+                continue;
+            }
+            if (/^@[A-Za-z0-9_]{2,18}$/.test(pieces[index])) {
+                node = document.createElement("span");
+                node.className = "comment-mention";
+                node.textContent = pieces[index];
+                target.appendChild(node);
+            } else {
+                target.appendChild(document.createTextNode(pieces[index]));
+            }
+        }
+    };
+
+    View.prototype.formatCommentTime = function (timestamp) {
+        var diff = Math.max(0, Date.now() - (timestamp || Date.now()));
+        if (diff < 60000) {
+            return "now";
+        }
+        if (diff < 3600000) {
+            return Math.floor(diff / 60000) + "m";
+        }
+        if (diff < 86400000) {
+            return Math.floor(diff / 3600000) + "h";
+        }
+        return Math.floor(diff / 86400000) + "d";
+    };
+
     View.prototype.playLuckSpin = function (result) {
         var self = this;
         var reels = [this.elements.luckReelA, this.elements.luckReelB, this.elements.luckReelC];
@@ -1950,12 +2367,58 @@
         this.updateMusicButton(true, true);
     };
 
+    View.prototype.selectBuiltInTrack = function (trackId) {
+        var wasPlaying = this.music.isPlaying;
+        this.music.setTrack(trackId);
+        if (wasPlaying) {
+            this.music.stop();
+            this.music.start();
+            this.updateMusicButton(true, true);
+        } else {
+            this.updateMusicButton(false, true);
+        }
+        if (this.activeSpotifyIndex !== -1) {
+            this.activeSpotifyIndex = -1;
+            this.renderSpotifySongs();
+        }
+        this.renderBuiltInTracks();
+    };
+
+    View.prototype.renderBuiltInTracks = function () {
+        var fragment;
+        var index;
+        var track;
+        var button;
+        var name;
+        var mood;
+        if (!this.elements.builtInTrackList) {
+            return;
+        }
+        fragment = document.createDocumentFragment();
+        for (index = 0; index < BUILT_IN_TRACKS.length; index += 1) {
+            track = BUILT_IN_TRACKS[index];
+            button = document.createElement("button");
+            button.type = "button";
+            button.className = "built-in-track" + (this.music.track.id === track.id ? " is-active" : "");
+            button.setAttribute("data-track-id", track.id);
+            name = document.createElement("strong");
+            name.textContent = track.name;
+            mood = document.createElement("span");
+            mood.textContent = track.mood;
+            button.appendChild(name);
+            button.appendChild(mood);
+            fragment.appendChild(button);
+        }
+        this.elements.builtInTrackList.innerHTML = "";
+        this.elements.builtInTrackList.appendChild(fragment);
+    };
+
     View.prototype.updateMusicButton = function (isOn, isSupported) {
         if (this.elements.calmMusicButton) {
             this.elements.calmMusicButton.classList.toggle("is-on", isOn);
             this.elements.calmMusicButton.setAttribute("aria-pressed", isOn ? "true" : "false");
             this.elements.calmMusicButton.disabled = !isSupported;
-            this.elements.calmMusicButton.textContent = isSupported ? (isOn ? "Pause Calm Music" : "Play Calm Music") : "No Audio";
+            this.elements.calmMusicButton.textContent = isSupported ? (isOn ? "Pause " + this.music.track.name : "Play " + this.music.track.name) : "No Audio";
         }
         if (this.elements.musicToggleText) {
             this.elements.musicToggleText.textContent = "Music";
@@ -1974,6 +2437,20 @@
         this.elements.musicPanel.classList.toggle("hidden", !isOpen);
         this.elements.musicPanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
         this.elements.musicToggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    };
+
+    View.prototype.toggleCodingTutorial = function () {
+        var isHidden = this.elements.codingTutorialPanel.classList.contains("hidden");
+        this.setCodingTutorialOpen(isHidden);
+    };
+
+    View.prototype.setCodingTutorialOpen = function (isOpen) {
+        if (!this.elements.codingTutorialPanel || !this.elements.codingTutorialButton) {
+            return;
+        }
+        this.elements.codingTutorialPanel.classList.toggle("hidden", !isOpen);
+        this.elements.codingTutorialPanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+        this.elements.codingTutorialButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
     };
 
     View.prototype.loadSpotifySongs = function () {
