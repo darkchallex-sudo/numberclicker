@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-site-verification" content="k_8hMUz1WBg3cCMdQdZm7UCYXDntfu4kkuUuZHWw9Es" />
-    <meta name="google-site-verification" content="IWy1J4PD94EJ5MSuzzT9sEfWNpkCSiQLxu13ZtIW490" />
     <title>Number Clicker</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -71,6 +69,8 @@
         <div class="tutorial-list">
             <section class="tutorial-card">
                 <h3>Beginner Coding</h3>
+                <p class="tutorial-summary">Start small, but build like the project matters. A full game is made from tiny pieces: variables for health, score, coins, timers, levels, inventory, and settings; functions for actions like jumping, buying, attacking, saving, and loading; conditions for rules like locked doors, enough coins, game over, and level complete; loops for repeated updates; and events for clicks, keys, collisions, and menus. You need to plan what the player can do, what the game remembers, what can go wrong, and how the screen updates after every action.</p>
+                <a class="learn-more-btn" href="#beginnerCodingDetails">Learn More</a>
                 <ol>
                     <li>Pick one small project, like a clicker counter or quiz.</li>
                     <li>Learn variables first: they store numbers, text, and game state.</li>
@@ -81,6 +81,8 @@
             </section>
             <section class="tutorial-card">
                 <h3>HTML, CSS, JavaScript</h3>
+                <p class="tutorial-summary">HTML, CSS, and JavaScript are enough to make complete browser games. HTML is the structure: screens, buttons, score displays, shops, menus, dialogs, and canvases. CSS is the presentation: layout, colors, spacing, animations, hover states, mobile sizing, and readable UI. JavaScript is the engine: input, math, upgrades, random drops, enemies, saving, sound, inventory, achievements, and game rules. You need to keep the three jobs separate enough that your game stays easy to fix when it grows.</p>
+                <a class="learn-more-btn" href="#webCodingDetails">Learn More</a>
                 <ol>
                     <li>HTML creates the buttons, text, panels, and inputs.</li>
                     <li>CSS controls colors, layout, spacing, and animations.</li>
@@ -91,6 +93,8 @@
             </section>
             <section class="tutorial-card">
                 <h3>Scratch Tutorial</h3>
+                <p class="tutorial-summary">Scratch can make real games if you organize it carefully. Sprites need clear jobs, variables need clear names, broadcasts need predictable meanings, and clones need cleanup rules. A complete Scratch game can have movement, enemies, levels, shops, save codes, health, coins, powerups, cutscenes, sound, and menus, but only if every script has a purpose. You need to test each feature before adding the next one, because messy broadcasts and forever loops can make a game hard to debug.</p>
+                <a class="learn-more-btn" href="#scratchDetails">Learn More</a>
                 <ol>
                     <li>Create a sprite and add a when green flag clicked block.</li>
                     <li>Make a variable named score and set it to 0.</li>
@@ -98,6 +102,36 @@
                     <li>Add a shop button sprite that buys an upgrade when score is high enough.</li>
                     <li>Use broadcasts to connect buttons, effects, and game screens.</li>
                 </ol>
+            </section>
+            <section id="beginnerCodingDetails" class="tutorial-card tutorial-detail">
+                <h3>Beginner Coding Details</h3>
+                <p>To make an entire game, write down the main loop before writing tons of code: what starts the game, what the player controls, what changes every second, how the player wins, how the player loses, and what gets saved. You need variables for the important state, functions for repeated actions, and clear names so you can understand your own code later. You need to test one feature at a time, keep backup copies before big changes, and fix errors while they are small. You cannot build every idea at once, ignore bugs because they seem tiny, copy code you do not understand, or use random names like x1 and thing2 for important game values.</p>
+                <ul class="tutorial-rules">
+                    <li>Need to do: plan controls, score, enemies, upgrades, saving, and win or lose rules.</li>
+                    <li>Need to do: make functions for actions that happen more than once.</li>
+                    <li>Cannot do: put every feature in one giant block of code.</li>
+                    <li>Cannot do: add new systems before the current system works.</li>
+                </ul>
+            </section>
+            <section id="webCodingDetails" class="tutorial-card tutorial-detail">
+                <h3>HTML, CSS, JavaScript Details</h3>
+                <p>A browser game should have HTML for the parts the player sees, CSS for the look and layout, and JavaScript for the rules. You need buttons with real IDs or classes, readable panels, mobile-friendly sizing, and JavaScript that updates the page after the game state changes. Use localStorage for simple saves, event listeners for clicks and keys, and small render functions to keep the screen synced with the data. You cannot trust the screen as your only source of truth, hide broken logic with CSS, make text impossible to read, or depend on one screen size. If the game has many moving objects, use canvas; if it is mostly buttons, menus, and stats, normal HTML works well.</p>
+                <ul class="tutorial-rules">
+                    <li>Need to do: separate structure, style, and behavior.</li>
+                    <li>Need to do: test on phone size and desktop size.</li>
+                    <li>Cannot do: store important game numbers only as text on the page.</li>
+                    <li>Cannot do: make buttons with no disabled state, no feedback, or unclear labels.</li>
+                </ul>
+            </section>
+            <section id="scratchDetails" class="tutorial-card tutorial-detail">
+                <h3>Scratch Tutorial Details</h3>
+                <p>In Scratch, treat every sprite like a small worker. The player sprite handles movement, enemy sprites handle danger, shop sprites handle buying, UI sprites show health and coins, and controller sprites manage menus and levels. You need broadcasts with clear names like start game, open shop, buy speed, next level, and game over. You need to stop old scripts when switching screens, delete clones when they are no longer needed, and reset variables when the green flag is clicked. You cannot let every sprite control everything, make endless forever loops that fight each other, forget to reset clones, or use broadcasts with unclear names like go, thing, or yes.</p>
+                <ul class="tutorial-rules">
+                    <li>Need to do: use broadcasts for screen changes and major events.</li>
+                    <li>Need to do: keep clone creation and clone deletion under control.</li>
+                    <li>Cannot do: leave old level scripts running after a new level starts.</li>
+                    <li>Cannot do: make one sprite responsible for the entire game.</li>
+                </ul>
             </section>
         </div>
     </aside>
@@ -112,9 +146,10 @@
         </div>
 
         <div id="commentAuthPanel" class="comment-auth">
+            <input id="googleNameInput" type="text" placeholder="Username" maxlength="18">
             <button id="googleAccountButton" class="comment-auth-btn" type="button">Continue With Google</button>
             <form id="emailAccountForm" class="comment-form">
-                <input id="commentNameInput" type="text" placeholder="Display name" maxlength="18" required>
+                <input id="commentNameInput" type="text" placeholder="Username" maxlength="18" required>
                 <input id="commentEmailInput" type="email" placeholder="Email" required>
                 <button type="submit">Create Account</button>
             </form>
@@ -268,6 +303,7 @@
         <p id="saveText" class="status-text">Checking save status...</p>
         <p id="microText" class="info-text">120 achievements exist. Some of them will wake up the screen.</p>
         <p id="findText" class="info-text">Current best find: None</p>
+        <button id="resetButton" class="reset-btn" type="button">Reset Progress</button>
     </main>
 
     <div id="toastHost" class="toast-container" aria-live="polite" aria-label="Achievement notifications"></div>
