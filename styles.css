@@ -608,6 +608,31 @@ body {
     background: linear-gradient(180deg, #f3ffe8, #a8f58f 48%, #3d8f57);
 }
 
+.volume-control {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    margin: 12px 0 14px;
+    padding: 10px 12px;
+    border: 1px solid rgba(184, 235, 255, 0.16);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(244, 251, 255, 0.82);
+    font-size: 0.9rem;
+}
+
+.volume-control input {
+    width: 100%;
+    accent-color: #7effc0;
+}
+
+.volume-control strong {
+    min-width: 44px;
+    text-align: right;
+    color: #ffffff;
+}
+
 .built-in-track-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -798,6 +823,158 @@ body {
     gap: 12px;
     z-index: 4;
     pointer-events: none;
+}
+
+.baldi-portal-button {
+    position: fixed;
+    z-index: 18;
+    width: 72px;
+    height: 72px;
+    border: 4px solid #ffffff;
+    border-radius: 999px;
+    color: #ffffff;
+    background: radial-gradient(circle at 35% 28%, #ff9f9f, #ff1f1f 46%, #740000 100%);
+    font: inherit;
+    font-size: 2.2rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 0 28px rgba(255, 31, 31, 0.72), 0 16px 36px rgba(0, 0, 0, 0.42);
+    animation: baldi-portal-pulse 900ms ease-in-out infinite;
+}
+
+.baldi-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    color: #121212;
+    background:
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.24) 0 2px, transparent 2px 74px),
+        linear-gradient(180deg, #f3e9b8 0 50%, #79b86f 50% 100%);
+}
+
+.baldi-room {
+    width: min(760px, 100%);
+    min-height: min(520px, calc(100vh - 48px));
+    display: grid;
+    grid-template-rows: 1fr 130px;
+    overflow: hidden;
+    border: 5px solid #1d1d1d;
+    border-radius: 8px;
+    background: #f7f0ca;
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+}
+
+.baldi-board {
+    display: grid;
+    align-content: center;
+    gap: 14px;
+    padding: 32px;
+    background:
+        linear-gradient(90deg, transparent 0 49%, rgba(255, 255, 255, 0.12) 49% 51%, transparent 51% 100%),
+        #1c6d38;
+    color: #ffffff;
+    text-align: center;
+    border-bottom: 8px solid #8b5a22;
+}
+
+.baldi-kicker,
+.baldi-status {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.82);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.baldi-board h2 {
+    margin: 0;
+    font-size: clamp(2.2rem, 8vw, 4.8rem);
+    line-height: 0.95;
+}
+
+.baldi-board p {
+    margin: 0;
+}
+
+.baldi-answer-form {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.baldi-answer-form input,
+.baldi-answer-form button {
+    min-height: 48px;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: 900;
+}
+
+.baldi-answer-form input {
+    width: min(180px, 50vw);
+    border: 3px solid #ffffff;
+    padding: 10px 12px;
+    color: #111111;
+    background: #ffffff;
+    text-align: center;
+}
+
+.baldi-answer-form button {
+    border: 0;
+    padding: 10px 18px;
+    color: #111111;
+    background: #ffe55d;
+    cursor: pointer;
+}
+
+.baldi-progress {
+    width: min(440px, 100%);
+    height: 18px;
+    margin: 0 auto;
+    overflow: hidden;
+    border: 3px solid #ffffff;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.28);
+}
+
+.baldi-progress span {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #ffe55d, #ff3030);
+    transition: width 180ms ease;
+}
+
+.baldi-hallway {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: end;
+    gap: 18px;
+    padding: 18px 24px 0;
+    background:
+        repeating-linear-gradient(0deg, #d9c98b 0 18px, #cbb978 18px 20px),
+        #d9c98b;
+}
+
+.baldi-door,
+.baldi-locker {
+    display: block;
+    height: 108px;
+    border: 4px solid #3a2410;
+    border-bottom: 0;
+}
+
+.baldi-door {
+    background: linear-gradient(90deg, #8b4b1d, #b66b2e 48%, #6d3511);
+}
+
+.baldi-locker {
+    background:
+        repeating-linear-gradient(0deg, transparent 0 14px, rgba(255, 255, 255, 0.28) 14px 16px),
+        #2f67be;
 }
 
 .critical-impact-frame {
@@ -2369,6 +2546,18 @@ h1 {
     }
 }
 
+@keyframes baldi-portal-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    50% {
+        transform: scale(1.08);
+        filter: brightness(1.24);
+    }
+}
+
 @keyframes critical-impact-frame {
     0% {
         opacity: 0;
@@ -2871,6 +3060,48 @@ h1 {
 
     .built-in-track-list {
         grid-template-columns: 1fr;
+    }
+
+    .volume-control {
+        grid-template-columns: 1fr auto;
+    }
+
+    .volume-control input {
+        grid-column: 1 / -1;
+    }
+
+    .baldi-portal-button {
+        width: 58px;
+        height: 58px;
+        font-size: 1.8rem;
+    }
+
+    .baldi-room {
+        grid-template-rows: 1fr 94px;
+        min-height: min(470px, calc(100vh - 48px));
+    }
+
+    .baldi-board {
+        padding: 22px 16px;
+    }
+
+    .baldi-answer-form {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .baldi-answer-form input {
+        width: 100%;
+    }
+
+    .baldi-hallway {
+        gap: 10px;
+        padding: 14px 14px 0;
+    }
+
+    .baldi-door,
+    .baldi-locker {
+        height: 82px;
     }
 
     .backpack-button {
