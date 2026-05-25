@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="k_8hMUz1WBg3cCMdQdZm7UCYXDntfu4kkuUuZHWw9Es" />
+    <meta name="google-site-verification" content="IWy1J4PD94EJ5MSuzzT9sEfWNpkCSiQLxu13ZtIW490" />
     <title>Number Clicker</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20260523-1">
 </head>
 <body>
 <div class="app-container">
@@ -40,6 +42,11 @@
             <button id="closeMusicPanelButton" class="close-btn" aria-label="Close music">✕</button>
         </div>
         <button id="calmMusicButton" class="action-btn" aria-pressed="false">Play Selected Track</button>
+        <label class="volume-control">
+            <span>Volume</span>
+            <input id="musicVolumeInput" type="range" min="0" max="100" value="70">
+            <strong id="musicVolumeValue">70%</strong>
+        </label>
         <div id="builtInTrackList" class="built-in-track-list" aria-label="Built-in music playlist"></div>
         <form id="spotifySongForm" class="spotify-form">
             <label>
@@ -301,12 +308,37 @@
         </div>
         <button id="clickButton" class="main-btn" type="button">Generate Number</button>
         <p id="saveText" class="status-text">Checking save status...</p>
-        <p id="microText" class="info-text">120 achievements exist. Some of them will wake up the screen.</p>
+        <p id="microText" class="info-text">121 achievements exist. Some of them will wake up the screen.</p>
         <p id="findText" class="info-text">Current best find: None</p>
         <button id="resetButton" class="reset-btn" type="button">Reset Progress</button>
     </main>
 
     <div id="toastHost" class="toast-container" aria-live="polite" aria-label="Achievement notifications"></div>
+
+    <button id="baldiPortalButton" class="baldi-portal-button hidden" type="button" aria-label="Enter Baldi's Basics challenge">!</button>
+
+    <div id="baldiOverlay" class="baldi-overlay hidden" aria-hidden="true">
+        <div class="baldi-room">
+            <div class="baldi-board">
+                <p class="baldi-kicker">Baldi's Basics</p>
+                <h2 id="baldiTitle">Math Time</h2>
+                <p id="baldiQuestion">Solve the notebooks before the ruler meter fills.</p>
+                <form id="baldiAnswerForm" class="baldi-answer-form">
+                    <input id="baldiAnswerInput" type="number" inputmode="numeric" autocomplete="off" placeholder="Answer">
+                    <button type="submit">Submit</button>
+                </form>
+                <div class="baldi-progress" aria-hidden="true">
+                    <span id="baldiProgressFill"></span>
+                </div>
+                <p id="baldiStatus" class="baldi-status">3 notebooks left.</p>
+            </div>
+            <div class="baldi-hallway" aria-hidden="true">
+                <span class="baldi-door"></span>
+                <span class="baldi-locker"></span>
+                <span class="baldi-door"></span>
+            </div>
+        </div>
+    </div>
 
     <div id="cutsceneOverlay" class="cutscene-overlay hidden" aria-hidden="true">
         <div class="cutscene-blackout"></div>
@@ -374,6 +406,6 @@
     </article>
 </template>
 
-<script src="script.js"></script>
+<script src="script.js?v=20260523-1"></script>
 </body>
 </html>
