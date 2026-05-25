@@ -5,7 +5,10 @@
     var SPOTIFY_LIBRARY_KEY = "number-clicker-spotify-songs-v1";
     var COMMENT_ACCOUNT_KEY = "number-clicker-comment-account-v1";
     var COMMENT_LIST_KEY = "number-clicker-comments-v1";
-    var TOTAL_ACHIEVEMENTS = 120;
+    var MUSIC_VOLUME_KEY = "number-clicker-music-volume-v1";
+    var TOTAL_ACHIEVEMENTS = 121;
+    var BALDI_PORTAL_INTERVAL_MS = 60 * 1000;
+    var BALDI_PORTAL_VISIBLE_MS = 18 * 1000;
     var BAD_WORDS = [
         "fuck",
         "shit",
@@ -387,6 +390,14 @@
             unlockedBy: function (state) {
                 return state.highestTemporaryLuck >= 1000;
             }
+        },
+        {
+            id: "rare-baldi-escape",
+            name: "Baldi Escape",
+            description: "Beat the red button's Baldi's Basics challenge and return to Number Clicker.",
+            unlockedBy: function (state) {
+                return !!state.baldiBasicsBeaten;
+            }
         }
     ];
 
@@ -529,6 +540,7 @@
             recentCutsceneTimestamps: [],
             cutsceneChainCount: 0,
             highestTemporaryLuck: 0,
+            baldiBasicsBeaten: false,
             unlockedAchievements: [],
             seenCutscenes: [],
             ownedBoosters: {},
@@ -586,6 +598,7 @@
                 recentCutsceneTimestamps: Array.isArray(parsed.recentCutsceneTimestamps) ? parsed.recentCutsceneTimestamps : [],
                 cutsceneChainCount: typeof parsed.cutsceneChainCount === "number" ? parsed.cutsceneChainCount : fallback.cutsceneChainCount,
                 highestTemporaryLuck: typeof parsed.highestTemporaryLuck === "number" ? parsed.highestTemporaryLuck : fallback.highestTemporaryLuck,
+                baldiBasicsBeaten: !!parsed.baldiBasicsBeaten,
                 unlockedAchievements: Array.isArray(parsed.unlockedAchievements) ? parsed.unlockedAchievements : [],
                 seenCutscenes: Array.isArray(parsed.seenCutscenes) ? parsed.seenCutscenes : [],
                 ownedBoosters: parsed.ownedBoosters && typeof parsed.ownedBoosters === "object" ? parsed.ownedBoosters : {},
@@ -1059,6 +1072,13 @@
         this.emit("update", this.getSnapshot());
     };
 
+    NumberEngine.prototype.completeBaldiChallenge = function () {
+        this.state.baldiBasicsBeaten = true;
+        this.unlockAchievements();
+        this.lastSaveSucceeded = this.storage.save(this.state);
+        this.emit("update", this.getSnapshot());
+    };
+
     NumberEngine.prototype.applyAdminMilestone = function (value) {
         this.state.number = Math.max(this.state.number, value);
         this.state.lastRoll = Math.max(this.state.lastRoll, value);
@@ -1386,7 +1406,12 @@
         this.isPlaying = false;
         this.step = 0;
         this.track = BUILT_IN_TRACKS[0];
+        this.volume = 0.7;
     }
+
+    CalmMusicPlayer.prototype.getOutputVolume = function () {
+        return this.track.volume * this.volume;
+    };
 
     CalmMusicPlayer.prototype.ensureContext = function () {
         var AudioContextRef = window.AudioContext || window.webkitAudioContext;
@@ -1400,7 +1425,7 @@
             this.delay = this.context.createDelay();
             this.delayGain = this.context.createGain();
 
-            this.master.gain.value = this.track.volume;
+            this.master.gain.value = this.getOutputVolume();
             this.filter.type = "lowpass";
             this.filter.frequency.value = this.track.filter;
             this.delay.delayTime.value = this.track.delay;
@@ -1425,9 +1450,17 @@
                     this.filter.frequency.setTargetAtTime(this.track.filter, this.context.currentTime, 0.2);
                     this.delay.delayTime.setTargetAtTime(this.track.delay, this.context.currentTime, 0.2);
                     this.delayGain.gain.setTargetAtTime(this.track.delayGain, this.context.currentTime, 0.2);
+                    this.master.gain.setTargetAtTime(this.getOutputVolume(), this.context.currentTime, 0.2);
                 }
                 return;
             }
+        }
+    };
+
+    CalmMusicPlayer.prototype.setVolume = function (volume) {
+        this.volume = Math.max(0, Math.min(1, volume));
+        if (this.master && this.context && this.isPlaying) {
+            this.master.gain.setTargetAtTime(this.getOutputVolume(), this.context.currentTime, 0.08);
         }
     };
 
@@ -1471,7 +1504,7 @@
         now = this.context.currentTime;
         chord = this.track.chords[this.step % this.track.chords.length];
         this.master.gain.cancelScheduledValues(now);
-        this.master.gain.setTargetAtTime(this.track.volume, now, 0.3);
+        this.master.gain.setTargetAtTime(this.getOutputVolume(), now, 0.3);
 
         for (index = 0; index < chord.length; index += 1) {
             this.playTone(chord[index], now + index * 0.035, this.track.interval / 1000 + 0.45, index === 0 ? 0.22 : 0.13, this.track.wave);
@@ -1500,6 +1533,7 @@
     function UISoundPlayer() {
         this.context = null;
         this.master = null;
+        this.volume = 0.7;
     }
 
     UISoundPlayer.prototype.ensureContext = function () {
@@ -1510,13 +1544,20 @@
         if (!this.context) {
             this.context = new AudioContextRef();
             this.master = this.context.createGain();
-            this.master.gain.value = 0.18;
+            this.master.gain.value = 0.18 * this.volume;
             this.master.connect(this.context.destination);
         }
         if (this.context.state === "suspended") {
             this.context.resume();
         }
         return true;
+    };
+
+    UISoundPlayer.prototype.setVolume = function (volume) {
+        this.volume = Math.max(0, Math.min(1, volume));
+        if (this.master && this.context) {
+            this.master.gain.setTargetAtTime(0.18 * this.volume, this.context.currentTime, 0.08);
+        }
     };
 
     UISoundPlayer.prototype.playHover = function () {
@@ -1554,6 +1595,9 @@
         this.elements = {};
         this.music = new CalmMusicPlayer();
         this.uiSounds = new UISoundPlayer();
+        this.savedVolume = this.loadMusicVolume();
+        this.music.setVolume(this.savedVolume);
+        this.uiSounds.setVolume(this.savedVolume);
         this.spotifySongs = this.loadSpotifySongs();
         this.commentAccount = this.loadCommentAccount();
         this.comments = this.loadComments();
@@ -1568,6 +1612,9 @@
         this.coinSpinTimer = null;
         this.coinSpinInterval = null;
         this.hoveredButton = null;
+        this.portalTimer = null;
+        this.portalHideTimer = null;
+        this.baldiChallenge = null;
     }
 
     View.prototype.cache = function () {
@@ -1588,6 +1635,8 @@
         this.elements.musicToggleText = document.getElementById("musicToggleText");
         this.elements.musicPanel = document.getElementById("musicPanel");
         this.elements.closeMusicPanelButton = document.getElementById("closeMusicPanelButton");
+        this.elements.musicVolumeInput = document.getElementById("musicVolumeInput");
+        this.elements.musicVolumeValue = document.getElementById("musicVolumeValue");
         this.elements.codingTutorialButton = document.getElementById("codingTutorialButton");
         this.elements.codingTutorialPanel = document.getElementById("codingTutorialPanel");
         this.elements.closeCodingTutorialButton = document.getElementById("closeCodingTutorialButton");
@@ -1644,6 +1693,14 @@
         this.elements.commentInput = document.getElementById("commentInput");
         this.elements.commentList = document.getElementById("commentList");
         this.elements.toastHost = document.getElementById("toastHost");
+        this.elements.baldiPortalButton = document.getElementById("baldiPortalButton");
+        this.elements.baldiOverlay = document.getElementById("baldiOverlay");
+        this.elements.baldiTitle = document.getElementById("baldiTitle");
+        this.elements.baldiQuestion = document.getElementById("baldiQuestion");
+        this.elements.baldiAnswerForm = document.getElementById("baldiAnswerForm");
+        this.elements.baldiAnswerInput = document.getElementById("baldiAnswerInput");
+        this.elements.baldiProgressFill = document.getElementById("baldiProgressFill");
+        this.elements.baldiStatus = document.getElementById("baldiStatus");
         this.elements.cutsceneOverlay = document.getElementById("cutsceneOverlay");
         this.elements.cutsceneTitle = document.getElementById("cutsceneTitle");
         this.elements.cutsceneSubtitle = document.getElementById("cutsceneSubtitle");
@@ -1784,6 +1841,12 @@
             });
         }
 
+        if (this.elements.musicVolumeInput) {
+            this.elements.musicVolumeInput.addEventListener("input", function () {
+                self.setMusicVolume(Number(self.elements.musicVolumeInput.value) / 100);
+            });
+        }
+
         if (this.elements.builtInTrackList) {
             this.elements.builtInTrackList.addEventListener("click", function (event) {
                 var button = event.target && event.target.closest ? event.target.closest("[data-track-id]") : null;
@@ -1851,6 +1914,19 @@
             });
         }
 
+        if (this.elements.baldiPortalButton) {
+            this.elements.baldiPortalButton.addEventListener("click", function () {
+                self.openBaldiChallenge();
+            });
+        }
+
+        if (this.elements.baldiAnswerForm) {
+            this.elements.baldiAnswerForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+                self.submitBaldiAnswer();
+            });
+        }
+
         this.engine.on("update", function (snapshot) {
             self.render(snapshot);
         });
@@ -1878,6 +1954,207 @@
         this.renderBuiltInTracks();
         this.renderSpotifySongs();
         this.renderComments();
+        this.renderMusicVolume();
+        this.scheduleBaldiPortal();
+    };
+
+    View.prototype.loadMusicVolume = function () {
+        var storage;
+        var raw;
+        var value;
+        try {
+            storage = window.localStorage;
+            raw = storage.getItem(MUSIC_VOLUME_KEY);
+            value = raw === null ? 0.7 : Number(raw);
+            return isFinite(value) ? Math.max(0, Math.min(1, value)) : 0.7;
+        } catch (error) {
+            return 0.7;
+        }
+    };
+
+    View.prototype.saveMusicVolume = function () {
+        try {
+            window.localStorage.setItem(MUSIC_VOLUME_KEY, String(this.savedVolume));
+        } catch (error) {
+            return false;
+        }
+        return true;
+    };
+
+    View.prototype.setMusicVolume = function (volume) {
+        this.savedVolume = Math.max(0, Math.min(1, volume));
+        this.music.setVolume(this.savedVolume);
+        this.uiSounds.setVolume(this.savedVolume);
+        this.saveMusicVolume();
+        this.renderMusicVolume();
+    };
+
+    View.prototype.renderMusicVolume = function () {
+        var percent = Math.round(this.savedVolume * 100);
+        if (this.elements.musicVolumeInput) {
+            this.elements.musicVolumeInput.value = String(percent);
+        }
+        if (this.elements.musicVolumeValue) {
+            this.elements.musicVolumeValue.textContent = percent + "%";
+        }
+    };
+
+    View.prototype.scheduleBaldiPortal = function () {
+        var self = this;
+        window.clearTimeout(this.portalTimer);
+        this.portalTimer = window.setTimeout(function () {
+            self.showBaldiPortal();
+        }, BALDI_PORTAL_INTERVAL_MS);
+    };
+
+    View.prototype.showBaldiPortal = function () {
+        var button = this.elements.baldiPortalButton;
+        var maxLeft;
+        var maxTop;
+        if (!button) {
+            return;
+        }
+        maxLeft = Math.max(24, window.innerWidth - 104);
+        maxTop = Math.max(90, window.innerHeight - 124);
+        button.style.left = this.randomPixel(18, maxLeft) + "px";
+        button.style.top = this.randomPixel(72, maxTop) + "px";
+        button.classList.remove("hidden");
+        window.clearTimeout(this.portalHideTimer);
+        this.portalHideTimer = window.setTimeout(this.hideBaldiPortal.bind(this), BALDI_PORTAL_VISIBLE_MS);
+        this.scheduleBaldiPortal();
+    };
+
+    View.prototype.hideBaldiPortal = function () {
+        if (this.elements.baldiPortalButton) {
+            this.elements.baldiPortalButton.classList.add("hidden");
+        }
+        window.clearTimeout(this.portalHideTimer);
+        this.portalHideTimer = null;
+    };
+
+    View.prototype.randomPixel = function (min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    };
+
+    View.prototype.openBaldiChallenge = function () {
+        this.hideBaldiPortal();
+        this.baldiChallenge = {
+            current: 0,
+            needed: 3,
+            mistakes: 0,
+            maxMistakes: 3,
+            answer: 0
+        };
+        if (this.elements.baldiOverlay) {
+            this.elements.baldiOverlay.classList.remove("hidden");
+            this.elements.baldiOverlay.setAttribute("aria-hidden", "false");
+        }
+        this.nextBaldiQuestion();
+    };
+
+    View.prototype.nextBaldiQuestion = function () {
+        var left;
+        var right;
+        var operator;
+        var ops = ["+", "-", "x"];
+        if (!this.baldiChallenge) {
+            return;
+        }
+        left = this.randomPixel(2, 12);
+        right = this.randomPixel(1, 9);
+        operator = ops[this.randomPixel(0, ops.length - 1)];
+        if (operator === "+") {
+            this.baldiChallenge.answer = left + right;
+        } else if (operator === "-") {
+            this.baldiChallenge.answer = left - right;
+        } else {
+            this.baldiChallenge.answer = left * right;
+        }
+        if (this.elements.baldiTitle) {
+            this.elements.baldiTitle.textContent = "Notebook " + (this.baldiChallenge.current + 1);
+        }
+        if (this.elements.baldiQuestion) {
+            this.elements.baldiQuestion.textContent = left + " " + operator + " " + right + " = ?";
+        }
+        if (this.elements.baldiAnswerInput) {
+            this.elements.baldiAnswerInput.value = "";
+            this.elements.baldiAnswerInput.focus();
+        }
+        this.renderBaldiChallenge("Solve it before Baldi catches up.");
+    };
+
+    View.prototype.submitBaldiAnswer = function () {
+        var value;
+        if (!this.baldiChallenge || !this.elements.baldiAnswerInput) {
+            return;
+        }
+        value = Number(this.elements.baldiAnswerInput.value);
+        if (value === this.baldiChallenge.answer) {
+            this.baldiChallenge.current += 1;
+            if (this.baldiChallenge.current >= this.baldiChallenge.needed) {
+                this.winBaldiChallenge();
+                return;
+            }
+            this.nextBaldiQuestion();
+            return;
+        }
+        this.baldiChallenge.mistakes += 1;
+        if (this.baldiChallenge.mistakes >= this.baldiChallenge.maxMistakes) {
+            this.loseBaldiChallenge();
+            return;
+        }
+        this.renderBaldiChallenge("Wrong. The ruler meter moved.");
+        this.elements.baldiAnswerInput.value = "";
+        this.elements.baldiAnswerInput.focus();
+    };
+
+    View.prototype.renderBaldiChallenge = function (message) {
+        var challenge = this.baldiChallenge;
+        var ratio;
+        if (!challenge) {
+            return;
+        }
+        ratio = challenge.mistakes / challenge.maxMistakes;
+        if (this.elements.baldiProgressFill) {
+            this.elements.baldiProgressFill.style.width = Math.round(ratio * 100) + "%";
+        }
+        if (this.elements.baldiStatus) {
+            this.elements.baldiStatus.textContent =
+                (challenge.needed - challenge.current) + " notebook" + (challenge.needed - challenge.current === 1 ? "" : "s") +
+                " left. " + message;
+        }
+    };
+
+    View.prototype.winBaldiChallenge = function () {
+        if (this.elements.baldiOverlay) {
+            this.elements.baldiOverlay.classList.add("hidden");
+            this.elements.baldiOverlay.setAttribute("aria-hidden", "true");
+        }
+        this.baldiChallenge = null;
+        this.engine.completeBaldiChallenge();
+        this.engine.emit("toast", {
+            name: "Returned From Baldi's Basics",
+            description: "You beat the challenge and returned to Number Clicker."
+        });
+    };
+
+    View.prototype.loseBaldiChallenge = function () {
+        if (this.elements.baldiTitle) {
+            this.elements.baldiTitle.textContent = "Caught";
+        }
+        if (this.elements.baldiQuestion) {
+            this.elements.baldiQuestion.textContent = "Baldi caught you. Returning to Number Clicker.";
+        }
+        this.renderBaldiChallenge("Try the red button again when it appears.");
+        window.setTimeout(this.closeBaldiChallenge.bind(this), 1400);
+    };
+
+    View.prototype.closeBaldiChallenge = function () {
+        if (this.elements.baldiOverlay) {
+            this.elements.baldiOverlay.classList.add("hidden");
+            this.elements.baldiOverlay.setAttribute("aria-hidden", "true");
+        }
+        this.baldiChallenge = null;
     };
 
     View.prototype.getEventButton = function (event) {
