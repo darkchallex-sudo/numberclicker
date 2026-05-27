@@ -21,6 +21,7 @@
         "piss",
         "slut",
         "whore"
+        "nigger"
     ];
 
     var NUMBER_MILESTONES = [
@@ -45,7 +46,7 @@
     var CLICKS_PER_COIN_BLOCK = 10;
     var LUCK_MACHINE_COST = 1000;
     var COIN_MACHINE_COST = 1000;
-    var CRITICAL_CLICK_CHANCE = 1 / 120;
+    var CRITICAL_CLICK_CHANCE = 1 / 10000;
     var CRITICAL_CLICK_MIN_LUCK = 250;
     var CRITICAL_CLICK_MAX_LUCK = 24000;
     var CRITICAL_CLICK_DURATION_CLICKS = 20;
