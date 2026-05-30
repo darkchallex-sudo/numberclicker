@@ -1617,6 +1617,9 @@
         this.portalTimer = null;
         this.portalHideTimer = null;
         this.baldiChallenge = null;
+        this.baldiFrame = null;
+        this.baldiShutdownTimer = null;
+        this.baldiKeys = {};
     }
 
     View.prototype.cache = function () {
@@ -1697,13 +1700,14 @@
         this.elements.toastHost = document.getElementById("toastHost");
         this.elements.baldiPortalButton = document.getElementById("baldiPortalButton");
         this.elements.baldiOverlay = document.getElementById("baldiOverlay");
+        this.elements.baldiCanvas = document.getElementById("baldiCanvas");
         this.elements.baldiTitle = document.getElementById("baldiTitle");
         this.elements.baldiQuestion = document.getElementById("baldiQuestion");
+        this.elements.baldiQuestionPanel = document.getElementById("baldiQuestionPanel");
         this.elements.baldiAnswerForm = document.getElementById("baldiAnswerForm");
         this.elements.baldiAnswerInput = document.getElementById("baldiAnswerInput");
         this.elements.baldiProgressFill = document.getElementById("baldiProgressFill");
         this.elements.baldiStatus = document.getElementById("baldiStatus");
-        this.elements.baldiCharacters = document.querySelectorAll(".baldi-character");
         this.elements.cutsceneOverlay = document.getElementById("cutsceneOverlay");
         this.elements.cutsceneTitle = document.getElementById("cutsceneTitle");
         this.elements.cutsceneSubtitle = document.getElementById("cutsceneSubtitle");
@@ -1930,6 +1934,20 @@
             });
         }
 
+        document.addEventListener("keydown", function (event) {
+            if (!self.baldiChallenge || self.baldiChallenge.questionOpen) {
+                return;
+            }
+            if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyW", "KeyA", "KeyS", "KeyD", "KeyQ", "KeyE"].indexOf(event.code) !== -1) {
+                event.preventDefault();
+                self.baldiKeys[event.code] = true;
+            }
+        });
+
+        document.addEventListener("keyup", function (event) {
+            self.baldiKeys[event.code] = false;
+        });
+
         this.engine.on("update", function (snapshot) {
             self.render(snapshot);
         });
@@ -2050,75 +2068,134 @@
             return;
         }
         this.hideBaldiPortal();
-        this.baldiChallenge = {
+        this.stopBaldiLoop();
+        this.baldiKeys = {};
+        this.baldiChallenge = this.createBaldiRun();
+        if (this.elements.baldiOverlay) {
+            this.elements.baldiOverlay.classList.remove("hidden");
+            this.elements.baldiOverlay.setAttribute("aria-hidden", "false");
+        }
+        if (this.elements.baldiQuestionPanel) {
+            this.elements.baldiQuestionPanel.classList.add("hidden");
+        }
+        if (this.elements.baldiTitle) {
+            this.elements.baldiTitle.textContent = "Find 7 Notebooks";
+        }
+        this.renderBaldiChallenge("Move through the school. Reach yellow notebooks and solve them.");
+        this.startBaldiLoop();
+    };
+
+    View.prototype.createBaldiRun = function () {
+        return {
+            map: [
+                "111111111111111",
+                "100000100000001",
+                "101110101111101",
+                "100010100000101",
+                "111010111110101",
+                "100010000010001",
+                "101111101011111",
+                "100000001000001",
+                "101111111011101",
+                "100000000010001",
+                "111011111110101",
+                "100010000000101",
+                "101110111011101",
+                "100000100000001",
+                "111111111111111"
+            ],
+            player: { x: 1.7, y: 1.7, angle: 0 },
+            baldi: { x: 13.3, y: 13.3, speed: 0.72 },
+            notebooks: [
+                { x: 5.5, y: 1.5, solved: false },
+                { x: 13.4, y: 1.6, solved: false },
+                { x: 3.5, y: 5.5, solved: false },
+                { x: 9.5, y: 5.5, solved: false },
+                { x: 1.6, y: 9.5, solved: false },
+                { x: 8.5, y: 11.5, solved: false },
+                { x: 7.5, y: 13.3, solved: false }
+            ],
+            characters: [
+                { name: "Playtime", x: 7.5, y: 3.5, color: "#ff66d9" },
+                { name: "Principal", x: 11.5, y: 3.5, color: "#4d83ff" },
+                { name: "Bully", x: 5.5, y: 7.5, color: "#f06b33" },
+                { name: "Arts", x: 9.5, y: 9.5, color: "#f7f7f7" },
+                { name: "Sweep", x: 2.5, y: 11.5, color: "#2ac65a" },
+                { name: "1st Prize", x: 11.5, y: 11.5, color: "#cfd6dd" },
+                { name: "Cloudy", x: 1.5, y: 3.5, color: "#9edcff" },
+                { name: "Beans", x: 13.5, y: 5.5, color: "#79d66b" },
+                { name: "Mrs. Pomp", x: 7.5, y: 7.5, color: "#ff83d8" },
+                { name: "Chalkles", x: 13.5, y: 9.5, color: "#2d7d42" },
+                { name: "The Test", x: 3.5, y: 11.5, color: "#f8f8f8" },
+                { name: "Filename2", x: 1.5, y: 13.5, color: "#111111" },
+                { name: "Dr. Reflex", x: 11.5, y: 13.5, color: "#6fc3ff" }
+            ],
             current: 0,
             needed: BALDI_NOTEBOOKS_REQUIRED,
             mistakes: 0,
             maxMistakes: 3,
             answer: 0,
-            activeCharacter: ""
+            questionOpen: false,
+            activeNotebook: null,
+            lastFrame: 0,
+            ended: false,
+            message: "WASD/arrows to move. Q/E or left/right arrows to turn."
         };
-        if (this.elements.baldiOverlay) {
-            this.elements.baldiOverlay.classList.remove("hidden");
-            this.elements.baldiOverlay.setAttribute("aria-hidden", "false");
-        }
-        this.nextBaldiQuestion();
     };
 
-    View.prototype.nextBaldiQuestion = function () {
-        var left;
-        var right;
-        var operator;
-        var ops = ["+", "-", "x"];
-        if (!this.baldiChallenge) {
-            return;
+    View.prototype.startBaldiLoop = function () {
+        var self = this;
+        function frame(timestamp) {
+            if (!self.baldiChallenge) {
+                return;
+            }
+            self.tickBaldiRun(timestamp);
+            if (!self.baldiChallenge || self.baldiChallenge.ended) {
+                return;
+            }
+            self.drawBaldiRun();
+            self.baldiFrame = window.requestAnimationFrame(frame);
         }
-        left = this.randomPixel(2, 12);
-        right = this.randomPixel(1, 9);
-        operator = ops[this.randomPixel(0, ops.length - 1)];
-        this.baldiChallenge.activeCharacter = this.getBaldiCharacterForStep(this.baldiChallenge.current);
-        if (operator === "+") {
-            this.baldiChallenge.answer = left + right;
-        } else if (operator === "-") {
-            this.baldiChallenge.answer = left - right;
-        } else {
-            this.baldiChallenge.answer = left * right;
+        this.baldiFrame = window.requestAnimationFrame(frame);
+    };
+
+    View.prototype.stopBaldiLoop = function () {
+        if (this.baldiFrame) {
+            window.cancelAnimationFrame(this.baldiFrame);
+            this.baldiFrame = null;
         }
-        if (this.elements.baldiTitle) {
-            this.elements.baldiTitle.textContent = "Notebook " + (this.baldiChallenge.current + 1) + " of " + this.baldiChallenge.needed;
-        }
-        if (this.elements.baldiQuestion) {
-            this.elements.baldiQuestion.textContent = left + " " + operator + " " + right + " = ?";
-        }
-        if (this.elements.baldiAnswerInput) {
-            this.elements.baldiAnswerInput.value = "";
-            this.elements.baldiAnswerInput.focus();
-        }
-        this.renderBaldiChallenge(this.baldiChallenge.activeCharacter + " is in the hallway. Solve it before Baldi catches up.");
     };
 
     View.prototype.submitBaldiAnswer = function () {
         var value;
-        if (!this.baldiChallenge || !this.elements.baldiAnswerInput) {
+        var challenge = this.baldiChallenge;
+        if (!challenge || !challenge.questionOpen || !this.elements.baldiAnswerInput) {
             return;
         }
         value = Number(this.elements.baldiAnswerInput.value);
-        if (value === this.baldiChallenge.answer) {
-            this.baldiChallenge.current += 1;
-            if (this.baldiChallenge.current >= this.baldiChallenge.needed) {
+        if (value === challenge.answer) {
+            challenge.activeNotebook.solved = true;
+            challenge.current += 1;
+            challenge.questionOpen = false;
+            challenge.activeNotebook = null;
+            if (this.elements.baldiQuestionPanel) {
+                this.elements.baldiQuestionPanel.classList.add("hidden");
+            }
+            if (challenge.current >= challenge.needed) {
                 this.winBaldiChallenge();
                 return;
             }
-            this.nextBaldiQuestion();
+            challenge.baldi.speed += 0.1;
+            this.renderBaldiChallenge("Notebook solved. Baldi is faster. Keep moving.");
             return;
         }
-        this.baldiChallenge.mistakes += 1;
-        if (this.baldiChallenge.mistakes >= this.baldiChallenge.maxMistakes) {
+        challenge.mistakes += 1;
+        challenge.baldi.speed += 0.18;
+        if (challenge.mistakes >= challenge.maxMistakes) {
             this.loseBaldiChallenge();
             return;
         }
-        this.baldiChallenge.activeCharacter = "Baldi";
-        this.renderBaldiChallenge("Wrong. The ruler meter moved.");
+        this.renderBaldiChallenge("Wrong. Baldi speeds up.");
         this.elements.baldiAnswerInput.value = "";
         this.elements.baldiAnswerInput.focus();
     };
@@ -2129,58 +2206,286 @@
         if (!challenge) {
             return;
         }
-        ratio = challenge.mistakes / challenge.maxMistakes;
+        ratio = challenge.current / challenge.needed;
         if (this.elements.baldiProgressFill) {
             this.elements.baldiProgressFill.style.width = Math.round(ratio * 100) + "%";
         }
         if (this.elements.baldiStatus) {
             this.elements.baldiStatus.textContent =
-                (challenge.needed - challenge.current) + " notebook" + (challenge.needed - challenge.current === 1 ? "" : "s") +
-                " left. " + message;
+                challenge.current + "/" + challenge.needed + " notebooks. " + message;
         }
-        this.renderBaldiCharacters(challenge);
     };
 
-    View.prototype.getBaldiCharacterForStep = function (step) {
-        var characters = [
-            "Baldi",
-            "Playtime",
-            "Principal",
-            "Bully",
-            "Arts and Crafters",
-            "Gotta Sweep",
-            "1st Prize",
-            "Cloudy Copter",
-            "Beans",
-            "Mrs. Pomp",
-            "Chalkles",
-            "The Test",
-            "Filename2",
-            "Dr. Reflex"
-        ];
-        return characters[step % characters.length];
-    };
-
-    View.prototype.renderBaldiCharacters = function (challenge) {
-        var characters = this.elements.baldiCharacters || [];
-        var activeName = challenge.activeCharacter;
-        var index;
-        var node;
-        for (index = 0; index < characters.length; index += 1) {
-            node = characters[index];
-            node.classList.remove("is-active", "is-angry");
-            if (node.getAttribute("data-baldi-character") === activeName) {
-                node.classList.add(challenge.mistakes > 0 ? "is-angry" : "is-active");
+    View.prototype.tickBaldiRun = function (timestamp) {
+        var challenge = this.baldiChallenge;
+        var delta;
+        var moveSpeed;
+        var turnSpeed;
+        var dx = 0;
+        var dy = 0;
+        var angle;
+        if (!challenge) {
+            return;
+        }
+        delta = challenge.lastFrame ? Math.min(0.05, (timestamp - challenge.lastFrame) / 1000) : 0.016;
+        challenge.lastFrame = timestamp;
+        if (!challenge.questionOpen) {
+            moveSpeed = 2.8 * delta;
+            turnSpeed = 2.4 * delta;
+            if (this.baldiKeys.ArrowLeft || this.baldiKeys.KeyQ) {
+                challenge.player.angle -= turnSpeed;
+            }
+            if (this.baldiKeys.ArrowRight || this.baldiKeys.KeyE) {
+                challenge.player.angle += turnSpeed;
+            }
+            angle = challenge.player.angle;
+            if (this.baldiKeys.ArrowUp || this.baldiKeys.KeyW) {
+                dx += Math.cos(angle) * moveSpeed;
+                dy += Math.sin(angle) * moveSpeed;
+            }
+            if (this.baldiKeys.ArrowDown || this.baldiKeys.KeyS) {
+                dx -= Math.cos(angle) * moveSpeed;
+                dy -= Math.sin(angle) * moveSpeed;
+            }
+            if (this.baldiKeys.KeyA) {
+                dx += Math.cos(angle - Math.PI / 2) * moveSpeed;
+                dy += Math.sin(angle - Math.PI / 2) * moveSpeed;
+            }
+            if (this.baldiKeys.KeyD) {
+                dx += Math.cos(angle + Math.PI / 2) * moveSpeed;
+                dy += Math.sin(angle + Math.PI / 2) * moveSpeed;
+            }
+            this.moveBaldiPlayer(dx, dy);
+            this.checkBaldiNotebook();
+            if (challenge.current > 0) {
+                this.moveBaldiEnemy(delta);
             }
         }
     };
 
-    View.prototype.clearBaldiCharacters = function () {
-        var characters = this.elements.baldiCharacters || [];
-        var index;
-        for (index = 0; index < characters.length; index += 1) {
-            characters[index].classList.remove("is-active", "is-angry");
+    View.prototype.isBaldiWall = function (x, y) {
+        var challenge = this.baldiChallenge;
+        var row;
+        var column;
+        if (!challenge) {
+            return true;
         }
+        row = Math.floor(y);
+        column = Math.floor(x);
+        if (row < 0 || row >= challenge.map.length || column < 0 || column >= challenge.map[row].length) {
+            return true;
+        }
+        return challenge.map[row].charAt(column) === "1";
+    };
+
+    View.prototype.moveBaldiPlayer = function (dx, dy) {
+        var player = this.baldiChallenge.player;
+        var radius = 0.18;
+        if (!this.isBaldiWall(player.x + dx + Math.sign(dx) * radius, player.y)) {
+            player.x += dx;
+        }
+        if (!this.isBaldiWall(player.x, player.y + dy + Math.sign(dy) * radius)) {
+            player.y += dy;
+        }
+    };
+
+    View.prototype.checkBaldiNotebook = function () {
+        var challenge = this.baldiChallenge;
+        var index;
+        var notebook;
+        var distance;
+        for (index = 0; index < challenge.notebooks.length; index += 1) {
+            notebook = challenge.notebooks[index];
+            if (notebook.solved) {
+                continue;
+            }
+            distance = Math.hypot(challenge.player.x - notebook.x, challenge.player.y - notebook.y);
+            if (distance < 0.62) {
+                this.openBaldiNotebook(notebook);
+                return;
+            }
+        }
+    };
+
+    View.prototype.openBaldiNotebook = function (notebook) {
+        var challenge = this.baldiChallenge;
+        var left = this.randomPixel(2, 12 + challenge.current * 2);
+        var right = this.randomPixel(1, 9 + challenge.current);
+        var operator = challenge.current > 2 ? ["+", "-", "x"][this.randomPixel(0, 2)] : ["+", "-"][this.randomPixel(0, 1)];
+        challenge.questionOpen = true;
+        challenge.activeNotebook = notebook;
+        if (operator === "+") {
+            challenge.answer = left + right;
+        } else if (operator === "-") {
+            challenge.answer = left - right;
+        } else {
+            challenge.answer = left * right;
+        }
+        if (this.elements.baldiTitle) {
+            this.elements.baldiTitle.textContent = "Notebook " + (challenge.current + 1) + " of " + challenge.needed;
+        }
+        if (this.elements.baldiQuestion) {
+            this.elements.baldiQuestion.textContent = left + " " + operator + " " + right + " = ?";
+        }
+        if (this.elements.baldiQuestionPanel) {
+            this.elements.baldiQuestionPanel.classList.remove("hidden");
+        }
+        if (this.elements.baldiAnswerInput) {
+            this.elements.baldiAnswerInput.value = "";
+            this.elements.baldiAnswerInput.focus();
+        }
+        this.renderBaldiChallenge("Solve the notebook to keep progressing.");
+    };
+
+    View.prototype.moveBaldiEnemy = function (delta) {
+        var challenge = this.baldiChallenge;
+        var baldi = challenge.baldi;
+        var player = challenge.player;
+        var angle = Math.atan2(player.y - baldi.y, player.x - baldi.x);
+        var speed = (baldi.speed + challenge.current * 0.12 + challenge.mistakes * 0.22) * delta;
+        var nextX = baldi.x + Math.cos(angle) * speed;
+        var nextY = baldi.y + Math.sin(angle) * speed;
+        if (!this.isBaldiWall(nextX, baldi.y)) {
+            baldi.x = nextX;
+        }
+        if (!this.isBaldiWall(baldi.x, nextY)) {
+            baldi.y = nextY;
+        }
+        if (Math.hypot(player.x - baldi.x, player.y - baldi.y) < 0.55) {
+            this.loseBaldiChallenge();
+        }
+    };
+
+    View.prototype.drawBaldiRun = function () {
+        var canvas = this.elements.baldiCanvas;
+        var ctx;
+        var challenge = this.baldiChallenge;
+        var width;
+        var height;
+        var column;
+        var rayAngle;
+        var distance;
+        var wallHeight;
+        if (!canvas || !challenge) {
+            return;
+        }
+        width = canvas.clientWidth || canvas.width;
+        height = canvas.clientHeight || canvas.height;
+        if (canvas.width !== width || canvas.height !== height) {
+            canvas.width = width;
+            canvas.height = height;
+        }
+        ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#93c5ff";
+        ctx.fillRect(0, 0, width, height / 2);
+        ctx.fillStyle = "#d7bf72";
+        ctx.fillRect(0, height / 2, width, height / 2);
+        for (column = 0; column < width; column += 2) {
+            rayAngle = challenge.player.angle - 0.55 + (column / width) * 1.1;
+            distance = this.castBaldiRay(rayAngle);
+            distance *= Math.cos(rayAngle - challenge.player.angle);
+            wallHeight = Math.min(height, height / Math.max(distance, 0.08));
+            ctx.fillStyle = distance < 1.5 ? "#f7e89a" : distance < 3.5 ? "#e6d072" : "#bca84f";
+            ctx.fillRect(column, (height - wallHeight) / 2, 2, wallHeight);
+        }
+        this.drawBaldiSprite(ctx, width, height, challenge.baldi.x, challenge.baldi.y, "#ff3434", "BALDI", 1.8);
+        this.drawBaldiRunObjects(ctx, width, height);
+        this.drawBaldiMinimap(ctx, width, height);
+    };
+
+    View.prototype.castBaldiRay = function (angle) {
+        var challenge = this.baldiChallenge;
+        var distance = 0;
+        var x;
+        var y;
+        while (distance < 14) {
+            x = challenge.player.x + Math.cos(angle) * distance;
+            y = challenge.player.y + Math.sin(angle) * distance;
+            if (this.isBaldiWall(x, y)) {
+                return distance;
+            }
+            distance += 0.025;
+        }
+        return 14;
+    };
+
+    View.prototype.drawBaldiRunObjects = function (ctx, width, height) {
+        var challenge = this.baldiChallenge;
+        var objects = [];
+        var index;
+        for (index = 0; index < challenge.notebooks.length; index += 1) {
+            if (!challenge.notebooks[index].solved) {
+                objects.push({ x: challenge.notebooks[index].x, y: challenge.notebooks[index].y, color: "#ffe95c", label: "NOTEBOOK", scale: 1.1 });
+            }
+        }
+        for (index = 0; index < challenge.characters.length; index += 1) {
+            objects.push({
+                x: challenge.characters[index].x,
+                y: challenge.characters[index].y,
+                color: challenge.characters[index].color,
+                label: challenge.characters[index].name,
+                scale: 0.8
+            });
+        }
+        objects.sort(function (a, b) {
+            return Math.hypot(challenge.player.x - b.x, challenge.player.y - b.y) - Math.hypot(challenge.player.x - a.x, challenge.player.y - a.y);
+        });
+        for (index = 0; index < objects.length; index += 1) {
+            this.drawBaldiSprite(ctx, width, height, objects[index].x, objects[index].y, objects[index].color, objects[index].label, objects[index].scale);
+        }
+    };
+
+    View.prototype.drawBaldiSprite = function (ctx, width, height, x, y, color, label, scale) {
+        var challenge = this.baldiChallenge;
+        var dx = x - challenge.player.x;
+        var dy = y - challenge.player.y;
+        var distance = Math.hypot(dx, dy);
+        var angle = Math.atan2(dy, dx) - challenge.player.angle;
+        var size;
+        var screenX;
+        while (angle < -Math.PI) {
+            angle += Math.PI * 2;
+        }
+        while (angle > Math.PI) {
+            angle -= Math.PI * 2;
+        }
+        if (Math.abs(angle) > 0.72 || distance < 0.15 || distance > 10) {
+            return;
+        }
+        size = Math.min(height * 0.8, (height / distance) * 0.42 * scale);
+        screenX = width / 2 + (angle / 0.72) * (width / 2);
+        ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+        ctx.fillRect(screenX - size * 0.32, height / 2 + size * 0.38, size * 0.64, size * 0.12);
+        ctx.fillStyle = color;
+        ctx.fillRect(screenX - size * 0.25, height / 2 - size * 0.45, size * 0.5, size * 0.9);
+        ctx.strokeStyle = "#111111";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(screenX - size * 0.25, height / 2 - size * 0.45, size * 0.5, size * 0.9);
+        ctx.fillStyle = "#111111";
+        ctx.font = Math.max(10, Math.floor(size * 0.11)) + "px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(label, screenX, height / 2 - size * 0.52);
+    };
+
+    View.prototype.drawBaldiMinimap = function (ctx, width, height) {
+        var challenge = this.baldiChallenge;
+        var scale = 7;
+        var offsetX = width - challenge.map[0].length * scale - 18;
+        var offsetY = height - challenge.map.length * scale - 18;
+        var row;
+        var column;
+        ctx.fillStyle = "rgba(0, 0, 0, 0.44)";
+        ctx.fillRect(offsetX - 8, offsetY - 8, challenge.map[0].length * scale + 16, challenge.map.length * scale + 16);
+        for (row = 0; row < challenge.map.length; row += 1) {
+            for (column = 0; column < challenge.map[row].length; column += 1) {
+                ctx.fillStyle = challenge.map[row].charAt(column) === "1" ? "#f6e27a" : "#1f7a3b";
+                ctx.fillRect(offsetX + column * scale, offsetY + row * scale, scale - 1, scale - 1);
+            }
+        }
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(offsetX + challenge.player.x * scale - 2, offsetY + challenge.player.y * scale - 2, 4, 4);
+        ctx.fillStyle = "#ff3030";
+        ctx.fillRect(offsetX + challenge.baldi.x * scale - 2, offsetY + challenge.baldi.y * scale - 2, 4, 4);
     };
 
     View.prototype.winBaldiChallenge = function () {
@@ -2188,9 +2493,9 @@
             this.elements.baldiOverlay.classList.add("hidden");
             this.elements.baldiOverlay.setAttribute("aria-hidden", "true");
         }
+        this.stopBaldiLoop();
         this.baldiChallenge = null;
         this.engine.completeBaldiChallenge();
-        this.clearBaldiCharacters();
         this.hideBaldiPortal();
         window.clearTimeout(this.portalTimer);
         this.portalTimer = null;
@@ -2201,23 +2506,78 @@
     };
 
     View.prototype.loseBaldiChallenge = function () {
-        if (this.elements.baldiTitle) {
-            this.elements.baldiTitle.textContent = "Caught";
+        if (!this.baldiChallenge || this.baldiChallenge.ended) {
+            return;
         }
-        if (this.elements.baldiQuestion) {
-            this.elements.baldiQuestion.textContent = "Baldi caught you. Returning to Number Clicker.";
+        this.baldiChallenge.ended = true;
+        this.stopBaldiLoop();
+        this.startBaldiShutdown();
+    };
+
+    View.prototype.startBaldiShutdown = function () {
+        var self = this;
+        var count = 0;
+        var maxButtons = 1230;
+        if (!this.elements.baldiOverlay) {
+            this.finishBaldiShutdown();
+            return;
         }
-        this.renderBaldiChallenge("Try the red button again when it appears.");
-        window.setTimeout(this.closeBaldiChallenge.bind(this), 1400);
+        this.elements.baldiOverlay.classList.remove("hidden");
+        this.elements.baldiOverlay.setAttribute("aria-hidden", "false");
+        this.elements.baldiOverlay.classList.add("is-shutting-down");
+        this.elements.baldiOverlay.innerHTML = "";
+        if (this.elements.baldiQuestionPanel) {
+            this.elements.baldiQuestionPanel.classList.add("hidden");
+        }
+        window.clearInterval(this.baldiShutdownTimer);
+        this.baldiShutdownTimer = window.setInterval(function () {
+            self.spawnBaldiShutdownButton(count);
+            count += 1;
+            if (count >= maxButtons) {
+                window.clearInterval(self.baldiShutdownTimer);
+                self.baldiShutdownTimer = null;
+                self.finishBaldiShutdown();
+            }
+        }, 6);
+    };
+
+    View.prototype.spawnBaldiShutdownButton = function (index) {
+        var button;
+        if (!this.elements.baldiOverlay) {
+            return;
+        }
+        button = document.createElement("button");
+        button.type = "button";
+        button.className = "baldi-shutdown-button";
+        button.textContent = "!";
+        button.style.left = this.randomPixel(-24, Math.max(24, window.innerWidth - 48)) + "px";
+        button.style.top = this.randomPixel(-24, Math.max(24, window.innerHeight - 48)) + "px";
+        button.style.animationDelay = (index % 10) * 18 + "ms";
+        this.elements.baldiOverlay.appendChild(button);
+    };
+
+    View.prototype.finishBaldiShutdown = function () {
+        window.clearInterval(this.baldiShutdownTimer);
+        this.baldiShutdownTimer = null;
+        this.baldiChallenge = null;
+        document.documentElement.innerHTML =
+            "<head><title>Number Clicker shut down</title></head>" +
+            "<body style=\"margin:0;background:#000;color:#f22;height:100vh;display:grid;place-items:center;font-family:monospace;text-align:center;\">" +
+            "<main><h1 style=\"font-size:clamp(2rem,8vw,6rem);margin:0 0 16px;\">BALDI CAUGHT YOU</h1>" +
+            "<p style=\"font-size:clamp(1rem,3vw,1.5rem);margin:0;\">The website shut down. Refresh or re-enter to play again.</p></main>" +
+            "</body>";
     };
 
     View.prototype.closeBaldiChallenge = function () {
+        window.clearInterval(this.baldiShutdownTimer);
+        this.baldiShutdownTimer = null;
         if (this.elements.baldiOverlay) {
             this.elements.baldiOverlay.classList.add("hidden");
             this.elements.baldiOverlay.setAttribute("aria-hidden", "true");
+            this.elements.baldiOverlay.classList.remove("is-shutting-down");
         }
+        this.stopBaldiLoop();
         this.baldiChallenge = null;
-        this.clearBaldiCharacters();
     };
 
     View.prototype.hasBaldiEscapeAchievement = function () {
