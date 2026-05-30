@@ -1499,11 +1499,15 @@
 
     CalmMusicPlayer.prototype.start = function () {
         var self = this;
+        var resumeResult;
         if (!this.ensureContext()) {
             return false;
         }
         if (this.context.state === "suspended") {
-            this.context.resume();
+            resumeResult = this.context.resume();
+            if (resumeResult && resumeResult.catch) {
+                resumeResult.catch(function () {});
+            }
         }
         if (this.isPlaying) {
             return true;
@@ -1571,6 +1575,7 @@
 
     UISoundPlayer.prototype.ensureContext = function () {
         var AudioContextRef = window.AudioContext || window.webkitAudioContext;
+        var resumeResult;
         if (!AudioContextRef) {
             return false;
         }
@@ -1581,7 +1586,10 @@
             this.master.connect(this.context.destination);
         }
         if (this.context.state === "suspended") {
-            this.context.resume();
+            resumeResult = this.context.resume();
+            if (resumeResult && resumeResult.catch) {
+                resumeResult.catch(function () {});
+            }
         }
         return true;
     };
@@ -2125,6 +2133,7 @@
     };
 
     View.prototype.forceGameAudioMax = function () {
+        var resumeResult;
         this.savedVolume = 1;
         this.music.setVolume(1);
         this.uiSounds.setVolume(1);
@@ -2132,10 +2141,16 @@
         this.renderMusicVolume();
         this.music.start();
         if (this.uiSounds.ensureContext()) {
-            this.uiSounds.context.resume();
+            resumeResult = this.uiSounds.context.resume();
+            if (resumeResult && resumeResult.catch) {
+                resumeResult.catch(function () {});
+            }
         }
         if (this.music.context && this.music.context.state === "suspended") {
-            this.music.context.resume();
+            resumeResult = this.music.context.resume();
+            if (resumeResult && resumeResult.catch) {
+                resumeResult.catch(function () {});
+            }
         }
     };
 
