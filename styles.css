@@ -856,6 +856,31 @@ body {
     background: #000000;
 }
 
+.baldi-reverse-warning {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: grid;
+    place-content: center;
+    gap: 18px;
+    color: #ff2020;
+    font-family: "Courier New", monospace;
+    text-align: center;
+    text-transform: uppercase;
+    transform: scaleX(-1);
+    filter: contrast(1.8);
+    animation: baldi-reverse-glitch 120ms steps(2, end) infinite;
+}
+
+.baldi-reverse-warning strong {
+    font-size: clamp(2.4rem, 9vw, 8rem);
+    letter-spacing: 0.08em;
+}
+
+.baldi-reverse-warning span {
+    font-size: clamp(1rem, 3vw, 2rem);
+}
+
 .baldi-shutdown-button {
     position: fixed;
     z-index: 31;
@@ -888,6 +913,12 @@ body {
     height: 100%;
     image-rendering: pixelated;
     background: #050505;
+    cursor: grab;
+    touch-action: none;
+}
+
+.baldi-canvas:active {
+    cursor: grabbing;
 }
 
 .baldi-hud {
@@ -2771,6 +2802,21 @@ h1 {
     100% {
         opacity: 1;
         transform: scale(1) rotate(0deg);
+    }
+}
+
+@keyframes baldi-reverse-glitch {
+    0% {
+        transform: scaleX(-1) translate(0, 0) skewX(0deg);
+        text-shadow: 4px 0 #00ffff, -4px 0 #ff00ff;
+    }
+    50% {
+        transform: scaleX(-1) translate(8px, -4px) skewX(5deg);
+        text-shadow: -8px 0 #00ffff, 7px 0 #ff00ff;
+    }
+    100% {
+        transform: scaleX(-1) translate(-5px, 3px) skewX(-4deg);
+        text-shadow: 3px 0 #00ffff, -6px 0 #ff00ff;
     }
 }
 
