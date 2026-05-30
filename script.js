@@ -9,6 +9,7 @@
     var TOTAL_ACHIEVEMENTS = 121;
     var BALDI_PORTAL_INTERVAL_MS = 60 * 1000;
     var BALDI_PORTAL_VISIBLE_MS = 18 * 1000;
+    var BALDI_NOTEBOOKS_REQUIRED = 7;
     var BAD_WORDS = [
         "fuck",
         "shit",
@@ -208,7 +209,7 @@
             id: "void-tonic",
             name: "Void Tonic",
             cost: 10000,
-            luck: 10000,
+            luck: 1000000,
             durationClicks: 1,
             singleUse: true,
             permanent: false,
@@ -220,7 +221,7 @@
             id: "zenith-tonic",
             name: "Zenith Tonic",
             cost: 28000,
-            luck: 18000,
+            luck: 18000000,
             durationClicks: 3,
             singleUse: false,
             permanent: false,
@@ -1112,6 +1113,7 @@
         var unlockedMap = {};
         var index;
         var achievement;
+        this.state.baldiBasicsBeaten = true;
         for (index = 0; index < this.state.unlockedAchievements.length; index += 1) {
             unlockedMap[this.state.unlockedAchievements[index]] = true;
         }
@@ -1701,6 +1703,7 @@
         this.elements.baldiAnswerInput = document.getElementById("baldiAnswerInput");
         this.elements.baldiProgressFill = document.getElementById("baldiProgressFill");
         this.elements.baldiStatus = document.getElementById("baldiStatus");
+        this.elements.baldiCharacters = document.querySelectorAll(".baldi-character");
         this.elements.cutsceneOverlay = document.getElementById("cutsceneOverlay");
         this.elements.cutsceneTitle = document.getElementById("cutsceneTitle");
         this.elements.cutsceneSubtitle = document.getElementById("cutsceneSubtitle");
@@ -2002,6 +2005,10 @@
     View.prototype.scheduleBaldiPortal = function () {
         var self = this;
         window.clearTimeout(this.portalTimer);
+        if (this.hasBaldiEscapeAchievement()) {
+            this.hideBaldiPortal();
+            return;
+        }
         this.portalTimer = window.setTimeout(function () {
             self.showBaldiPortal();
         }, BALDI_PORTAL_INTERVAL_MS);
@@ -2011,7 +2018,8 @@
         var button = this.elements.baldiPortalButton;
         var maxLeft;
         var maxTop;
-        if (!button) {
+        if (!button || this.hasBaldiEscapeAchievement()) {
+            this.hideBaldiPortal();
             return;
         }
         maxLeft = Math.max(24, window.innerWidth - 104);
@@ -2037,13 +2045,18 @@
     };
 
     View.prototype.openBaldiChallenge = function () {
+        if (this.hasBaldiEscapeAchievement()) {
+            this.hideBaldiPortal();
+            return;
+        }
         this.hideBaldiPortal();
         this.baldiChallenge = {
             current: 0,
-            needed: 3,
+            needed: BALDI_NOTEBOOKS_REQUIRED,
             mistakes: 0,
             maxMistakes: 3,
-            answer: 0
+            answer: 0,
+            activeCharacter: ""
         };
         if (this.elements.baldiOverlay) {
             this.elements.baldiOverlay.classList.remove("hidden");
@@ -2063,6 +2076,7 @@
         left = this.randomPixel(2, 12);
         right = this.randomPixel(1, 9);
         operator = ops[this.randomPixel(0, ops.length - 1)];
+        this.baldiChallenge.activeCharacter = this.getBaldiCharacterForStep(this.baldiChallenge.current);
         if (operator === "+") {
             this.baldiChallenge.answer = left + right;
         } else if (operator === "-") {
@@ -2071,7 +2085,7 @@
             this.baldiChallenge.answer = left * right;
         }
         if (this.elements.baldiTitle) {
-            this.elements.baldiTitle.textContent = "Notebook " + (this.baldiChallenge.current + 1);
+            this.elements.baldiTitle.textContent = "Notebook " + (this.baldiChallenge.current + 1) + " of " + this.baldiChallenge.needed;
         }
         if (this.elements.baldiQuestion) {
             this.elements.baldiQuestion.textContent = left + " " + operator + " " + right + " = ?";
@@ -2080,7 +2094,7 @@
             this.elements.baldiAnswerInput.value = "";
             this.elements.baldiAnswerInput.focus();
         }
-        this.renderBaldiChallenge("Solve it before Baldi catches up.");
+        this.renderBaldiChallenge(this.baldiChallenge.activeCharacter + " is in the hallway. Solve it before Baldi catches up.");
     };
 
     View.prototype.submitBaldiAnswer = function () {
@@ -2103,6 +2117,7 @@
             this.loseBaldiChallenge();
             return;
         }
+        this.baldiChallenge.activeCharacter = "Baldi";
         this.renderBaldiChallenge("Wrong. The ruler meter moved.");
         this.elements.baldiAnswerInput.value = "";
         this.elements.baldiAnswerInput.focus();
@@ -2123,6 +2138,49 @@
                 (challenge.needed - challenge.current) + " notebook" + (challenge.needed - challenge.current === 1 ? "" : "s") +
                 " left. " + message;
         }
+        this.renderBaldiCharacters(challenge);
+    };
+
+    View.prototype.getBaldiCharacterForStep = function (step) {
+        var characters = [
+            "Baldi",
+            "Playtime",
+            "Principal",
+            "Bully",
+            "Arts and Crafters",
+            "Gotta Sweep",
+            "1st Prize",
+            "Cloudy Copter",
+            "Beans",
+            "Mrs. Pomp",
+            "Chalkles",
+            "The Test",
+            "Filename2",
+            "Dr. Reflex"
+        ];
+        return characters[step % characters.length];
+    };
+
+    View.prototype.renderBaldiCharacters = function (challenge) {
+        var characters = this.elements.baldiCharacters || [];
+        var activeName = challenge.activeCharacter;
+        var index;
+        var node;
+        for (index = 0; index < characters.length; index += 1) {
+            node = characters[index];
+            node.classList.remove("is-active", "is-angry");
+            if (node.getAttribute("data-baldi-character") === activeName) {
+                node.classList.add(challenge.mistakes > 0 ? "is-angry" : "is-active");
+            }
+        }
+    };
+
+    View.prototype.clearBaldiCharacters = function () {
+        var characters = this.elements.baldiCharacters || [];
+        var index;
+        for (index = 0; index < characters.length; index += 1) {
+            characters[index].classList.remove("is-active", "is-angry");
+        }
     };
 
     View.prototype.winBaldiChallenge = function () {
@@ -2132,6 +2190,10 @@
         }
         this.baldiChallenge = null;
         this.engine.completeBaldiChallenge();
+        this.clearBaldiCharacters();
+        this.hideBaldiPortal();
+        window.clearTimeout(this.portalTimer);
+        this.portalTimer = null;
         this.engine.emit("toast", {
             name: "Returned From Baldi's Basics",
             description: "You beat the challenge and returned to Number Clicker."
@@ -2155,6 +2217,25 @@
             this.elements.baldiOverlay.setAttribute("aria-hidden", "true");
         }
         this.baldiChallenge = null;
+        this.clearBaldiCharacters();
+    };
+
+    View.prototype.hasBaldiEscapeAchievement = function () {
+        var achievements;
+        var index;
+        if (!this.engine || !this.engine.state) {
+            return false;
+        }
+        if (this.engine.state.baldiBasicsBeaten) {
+            return true;
+        }
+        achievements = this.engine.state.unlockedAchievements || [];
+        for (index = 0; index < achievements.length; index += 1) {
+            if (achievements[index] === "rare-baldi-escape") {
+                return true;
+            }
+        }
+        return false;
     };
 
     View.prototype.getEventButton = function (event) {
@@ -2278,6 +2359,12 @@
 
         if (this.elements.totalRollsValue) {
             this.elements.totalRollsValue.textContent = safeFormatNumber(snapshot.totalRolls);
+        }
+
+        if (this.hasBaldiEscapeAchievement()) {
+            this.hideBaldiPortal();
+            window.clearTimeout(this.portalTimer);
+            this.portalTimer = null;
         }
 
         if (this.elements.bestFindValue) {
