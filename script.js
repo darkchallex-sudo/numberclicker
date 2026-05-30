@@ -7,6 +7,7 @@
     var COMMENT_LIST_KEY = "number-clicker-comments-v1";
     var MUSIC_VOLUME_KEY = "number-clicker-music-volume-v1";
     var TOTAL_ACHIEVEMENTS = 121;
+    var BALDI_PORTAL_FIRST_DELAY_MS = 15 * 1000;
     var BALDI_PORTAL_INTERVAL_MS = 60 * 1000;
     var BALDI_PORTAL_VISIBLE_MS = 18 * 1000;
     var BALDI_NOTEBOOKS_REQUIRED = 7;
@@ -46,7 +47,8 @@
     var CLICKS_PER_COIN_BLOCK = 10;
     var LUCK_MACHINE_COST = 1000;
     var COIN_MACHINE_COST = 1000;
-    var CRITICAL_CLICK_CHANCE = 1 / 120;
+    var CRITICAL_CLICK_CHANCE = 1 / 10000;
+    var BALDI_CLICK_CHANCE = 1 / 50000;
     var CRITICAL_CLICK_MIN_LUCK = 250;
     var CRITICAL_CLICK_MAX_LUCK = 24000;
     var CRITICAL_CLICK_DURATION_CLICKS = 20;
@@ -717,7 +719,8 @@
             cutscene: [],
             luckSpin: [],
             coinSpin: [],
-            criticalClick: []
+            criticalClick: [],
+            baldiClick: []
         };
         this.lastSaveSucceeded = false;
         this.ensureBoosterShape();
@@ -819,6 +822,7 @@
         this.consumeActiveBoostCharge();
         this.awardCoins(previousCoinBlocks);
         this.tryCriticalClick();
+        this.tryBaldiClick();
 
         this.recomputePower();
         this.unlockAchievements();
@@ -856,6 +860,33 @@
             name: "Critical Click",
             description: "+" + safeFormatNumber(luckBoost) + " luck for " + safeFormatNumber(CRITICAL_CLICK_DURATION_CLICKS) + " clicks."
         });
+    };
+
+    NumberEngine.prototype.tryBaldiClick = function () {
+        if (this.hasBaldiEscapeAchievement()) {
+            return;
+        }
+        if (Math.random() > BALDI_CLICK_CHANCE) {
+            return;
+        }
+        this.emit("toast", {
+            name: "Baldi Click",
+            description: "A 1 in 50,000 click pulled you into Baldi's schoolhouse."
+        });
+        this.emit("baldiClick");
+    };
+
+    NumberEngine.prototype.hasBaldiEscapeAchievement = function () {
+        var index;
+        if (this.state.baldiBasicsBeaten) {
+            return true;
+        }
+        for (index = 0; index < this.state.unlockedAchievements.length; index += 1) {
+            if (this.state.unlockedAchievements[index] === "rare-baldi-escape") {
+                return true;
+            }
+        }
+        return false;
     };
 
     NumberEngine.prototype.randomInt = function (min, max) {
@@ -1616,6 +1647,7 @@
         this.hoveredButton = null;
         this.portalTimer = null;
         this.portalHideTimer = null;
+        this.hasScheduledFirstBaldiPortal = false;
         this.baldiChallenge = null;
         this.baldiFrame = null;
         this.baldiShutdownTimer = null;
@@ -1972,6 +2004,10 @@
             self.playCriticalImpact(result);
         });
 
+        this.engine.on("baldiClick", function () {
+            self.openBaldiChallenge();
+        });
+
         this.renderBuiltInTracks();
         this.renderSpotifySongs();
         this.renderComments();
@@ -2022,14 +2058,17 @@
 
     View.prototype.scheduleBaldiPortal = function () {
         var self = this;
+        var delay;
         window.clearTimeout(this.portalTimer);
         if (this.hasBaldiEscapeAchievement()) {
             this.hideBaldiPortal();
             return;
         }
+        delay = this.hasScheduledFirstBaldiPortal ? BALDI_PORTAL_INTERVAL_MS : BALDI_PORTAL_FIRST_DELAY_MS;
+        this.hasScheduledFirstBaldiPortal = true;
         this.portalTimer = window.setTimeout(function () {
             self.showBaldiPortal();
-        }, BALDI_PORTAL_INTERVAL_MS);
+        }, delay);
     };
 
     View.prototype.showBaldiPortal = function () {
@@ -2725,6 +2764,8 @@
             this.hideBaldiPortal();
             window.clearTimeout(this.portalTimer);
             this.portalTimer = null;
+        } else if (!this.portalTimer && !this.baldiChallenge) {
+            this.scheduleBaldiPortal();
         }
 
         if (this.elements.bestFindValue) {
