@@ -1602,18 +1602,46 @@
         this.playTone(220, 0.075, 0.035, "triangle");
     };
 
-    UISoundPlayer.prototype.playTone = function (frequency, duration, level, wave) {
+    UISoundPlayer.prototype.playBaldiPortal = function () {
+        this.playTone(880, 0.08, 0.18, "square");
+        this.playTone(440, 0.12, 0.14, "sawtooth");
+        this.playTone(1760, 0.045, 0.1, "triangle");
+    };
+
+    UISoundPlayer.prototype.playReverseGlitch = function () {
         var now;
-        var oscillator;
-        var gain;
+        var index;
         if (!this.ensureContext()) {
             return;
         }
         now = this.context.currentTime;
+        this.master.gain.cancelScheduledValues(now);
+        this.master.gain.setTargetAtTime(0.95, now, 0.01);
+        for (index = 0; index < 12; index += 1) {
+            this.playScheduledTone(1200 - index * 78, now + index * 0.055, 0.12, 0.24, index % 2 === 0 ? "sawtooth" : "square");
+        }
+        this.playNoiseBurst(now + 0.1, 1.6, 0.75);
+    };
+
+    UISoundPlayer.prototype.playTone = function (frequency, duration, level, wave) {
+        var now;
+        if (!this.ensureContext()) {
+            return;
+        }
+        now = this.context.currentTime;
+        this.playScheduledTone(frequency, now, duration, level, wave);
+    };
+
+    UISoundPlayer.prototype.playScheduledTone = function (frequency, startAt, duration, level, wave) {
+        var now;
+        var oscillator;
+        var gain;
+        now = startAt;
         oscillator = this.context.createOscillator();
         gain = this.context.createGain();
         oscillator.type = wave;
         oscillator.frequency.setValueAtTime(frequency, now);
+        oscillator.frequency.exponentialRampToValueAtTime(Math.max(20, frequency * 0.45), now + duration);
         gain.gain.setValueAtTime(0.0001, now);
         gain.gain.exponentialRampToValueAtTime(level, now + 0.008);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
@@ -1621,6 +1649,27 @@
         gain.connect(this.master);
         oscillator.start(now);
         oscillator.stop(now + duration + 0.02);
+    };
+
+    UISoundPlayer.prototype.playNoiseBurst = function (startAt, duration, level) {
+        var sampleRate = this.context.sampleRate;
+        var buffer = this.context.createBuffer(1, Math.floor(sampleRate * duration), sampleRate);
+        var data = buffer.getChannelData(0);
+        var source;
+        var gain;
+        var index;
+        for (index = 0; index < data.length; index += 1) {
+            data[index] = (Math.random() * 2 - 1) * (1 - index / data.length);
+        }
+        source = this.context.createBufferSource();
+        gain = this.context.createGain();
+        source.buffer = buffer;
+        gain.gain.setValueAtTime(level, startAt);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+        source.connect(gain);
+        gain.connect(this.master);
+        source.start(startAt);
+        source.stop(startAt + duration);
     };
 
     function View(engine) {
@@ -1652,6 +1701,8 @@
         this.baldiFrame = null;
         this.baldiShutdownTimer = null;
         this.baldiKeys = {};
+        this.baldiPointerActive = false;
+        this.baldiPointerLastX = 0;
     }
 
     View.prototype.cache = function () {
@@ -1980,6 +2031,33 @@
             self.baldiKeys[event.code] = false;
         });
 
+        if (this.elements.baldiCanvas) {
+            this.elements.baldiCanvas.addEventListener("pointerdown", function (event) {
+                if (!self.baldiChallenge || self.baldiChallenge.questionOpen) {
+                    return;
+                }
+                self.baldiPointerActive = true;
+                self.baldiPointerLastX = event.clientX;
+                self.elements.baldiCanvas.setPointerCapture(event.pointerId);
+            });
+
+            this.elements.baldiCanvas.addEventListener("pointermove", function (event) {
+                if (!self.baldiChallenge || !self.baldiPointerActive || self.baldiChallenge.questionOpen) {
+                    return;
+                }
+                self.baldiChallenge.player.angle += (event.clientX - self.baldiPointerLastX) * 0.006;
+                self.baldiPointerLastX = event.clientX;
+            });
+
+            this.elements.baldiCanvas.addEventListener("pointerup", function () {
+                self.baldiPointerActive = false;
+            });
+
+            this.elements.baldiCanvas.addEventListener("pointercancel", function () {
+                self.baldiPointerActive = false;
+            });
+        }
+
         this.engine.on("update", function (snapshot) {
             self.render(snapshot);
         });
@@ -2046,6 +2124,21 @@
         this.renderMusicVolume();
     };
 
+    View.prototype.forceGameAudioMax = function () {
+        this.savedVolume = 1;
+        this.music.setVolume(1);
+        this.uiSounds.setVolume(1);
+        this.saveMusicVolume();
+        this.renderMusicVolume();
+        this.music.start();
+        if (this.uiSounds.ensureContext()) {
+            this.uiSounds.context.resume();
+        }
+        if (this.music.context && this.music.context.state === "suspended") {
+            this.music.context.resume();
+        }
+    };
+
     View.prototype.renderMusicVolume = function () {
         var percent = Math.round(this.savedVolume * 100);
         if (this.elements.musicVolumeInput) {
@@ -2084,6 +2177,7 @@
         button.style.left = this.randomPixel(18, maxLeft) + "px";
         button.style.top = this.randomPixel(72, maxTop) + "px";
         button.classList.remove("hidden");
+        this.uiSounds.playBaldiPortal();
         window.clearTimeout(this.portalHideTimer);
         this.portalHideTimer = window.setTimeout(this.hideBaldiPortal.bind(this), BALDI_PORTAL_VISIBLE_MS);
         this.scheduleBaldiPortal();
@@ -2155,19 +2249,19 @@
                 { x: 7.5, y: 13.3, solved: false }
             ],
             characters: [
-                { name: "Playtime", x: 7.5, y: 3.5, color: "#ff66d9" },
-                { name: "Principal", x: 11.5, y: 3.5, color: "#4d83ff" },
-                { name: "Bully", x: 5.5, y: 7.5, color: "#f06b33" },
-                { name: "Arts", x: 9.5, y: 9.5, color: "#f7f7f7" },
-                { name: "Sweep", x: 2.5, y: 11.5, color: "#2ac65a" },
-                { name: "1st Prize", x: 11.5, y: 11.5, color: "#cfd6dd" },
-                { name: "Cloudy", x: 1.5, y: 3.5, color: "#9edcff" },
-                { name: "Beans", x: 13.5, y: 5.5, color: "#79d66b" },
-                { name: "Mrs. Pomp", x: 7.5, y: 7.5, color: "#ff83d8" },
-                { name: "Chalkles", x: 13.5, y: 9.5, color: "#2d7d42" },
-                { name: "The Test", x: 3.5, y: 11.5, color: "#f8f8f8" },
-                { name: "Filename2", x: 1.5, y: 13.5, color: "#111111" },
-                { name: "Dr. Reflex", x: 11.5, y: 13.5, color: "#6fc3ff" }
+                { type: "playtime", name: "Playtime", x: 7.5, y: 3.5, color: "#ff66d9", dir: 1, cooldown: 0 },
+                { type: "principal", name: "Principal", x: 11.5, y: 3.5, color: "#4d83ff", dir: -1, cooldown: 0 },
+                { type: "bully", name: "Bully", x: 5.5, y: 7.5, color: "#f06b33", cooldown: 0 },
+                { type: "arts", name: "Arts", x: 9.5, y: 9.5, color: "#f7f7f7", cooldown: 0 },
+                { type: "sweep", name: "Gotta Sweep", x: 2.5, y: 11.5, color: "#2ac65a", vx: 1, vy: 0, cooldown: 0 },
+                { type: "prize", name: "1st Prize", x: 11.5, y: 11.5, color: "#cfd6dd", cooldown: 0 },
+                { type: "cloudy", name: "Cloudy Copter", x: 1.5, y: 3.5, color: "#9edcff", dir: 1, cooldown: 0 },
+                { type: "beans", name: "Beans", x: 13.5, y: 5.5, color: "#79d66b", cooldown: 0 },
+                { type: "pomp", name: "Mrs. Pomp", x: 7.5, y: 7.5, color: "#ff83d8", cooldown: 0 },
+                { type: "chalkles", name: "Chalkles", x: 13.5, y: 9.5, color: "#2d7d42", cooldown: 0 },
+                { type: "test", name: "The Test", x: 3.5, y: 11.5, color: "#f8f8f8", cooldown: 0 },
+                { type: "filename", name: "Filename2", x: 1.5, y: 13.5, color: "#111111", cooldown: 0 },
+                { type: "reflex", name: "Dr. Reflex", x: 11.5, y: 13.5, color: "#6fc3ff", cooldown: 0 }
             ],
             current: 0,
             needed: BALDI_NOTEBOOKS_REQUIRED,
@@ -2178,7 +2272,10 @@
             activeNotebook: null,
             lastFrame: 0,
             ended: false,
-            message: "WASD/arrows to move. Q/E or left/right arrows to turn."
+            slowUntil: 0,
+            freezeUntil: 0,
+            blindUntil: 0,
+            message: "WASD to move. Q/E, arrow keys, or drag the view to turn."
         };
     };
 
@@ -2269,7 +2366,7 @@
         delta = challenge.lastFrame ? Math.min(0.05, (timestamp - challenge.lastFrame) / 1000) : 0.016;
         challenge.lastFrame = timestamp;
         if (!challenge.questionOpen) {
-            moveSpeed = 2.8 * delta;
+            moveSpeed = (Date.now() < challenge.slowUntil ? 1.28 : 2.8) * delta;
             turnSpeed = 2.4 * delta;
             if (this.baldiKeys.ArrowLeft || this.baldiKeys.KeyQ) {
                 challenge.player.angle -= turnSpeed;
@@ -2294,8 +2391,13 @@
                 dx += Math.cos(angle + Math.PI / 2) * moveSpeed;
                 dy += Math.sin(angle + Math.PI / 2) * moveSpeed;
             }
+            if (Date.now() < challenge.freezeUntil) {
+                dx = 0;
+                dy = 0;
+            }
             this.moveBaldiPlayer(dx, dy);
             this.checkBaldiNotebook();
+            this.tickBaldiCharacters(delta);
             if (challenge.current > 0) {
                 this.moveBaldiEnemy(delta);
             }
@@ -2325,6 +2427,138 @@
         }
         if (!this.isBaldiWall(player.x, player.y + dy + Math.sign(dy) * radius)) {
             player.y += dy;
+        }
+    };
+
+    View.prototype.moveBaldiActor = function (actor, dx, dy) {
+        var radius = 0.16;
+        var moved = false;
+        if (!this.isBaldiWall(actor.x + dx + Math.sign(dx) * radius, actor.y)) {
+            actor.x += dx;
+            moved = true;
+        }
+        if (!this.isBaldiWall(actor.x, actor.y + dy + Math.sign(dy) * radius)) {
+            actor.y += dy;
+            moved = true;
+        }
+        return moved;
+    };
+
+    View.prototype.tickBaldiCharacters = function (delta) {
+        var challenge = this.baldiChallenge;
+        var now = Date.now();
+        var player = challenge.player;
+        var index;
+        var character;
+        var angle;
+        var distance;
+        for (index = 0; index < challenge.characters.length; index += 1) {
+            character = challenge.characters[index];
+            character.cooldown = Math.max(0, character.cooldown - delta);
+            distance = Math.hypot(player.x - character.x, player.y - character.y);
+
+            if (character.type === "playtime") {
+                character.dir = character.dir || 1;
+                if (!this.moveBaldiActor(character, character.dir * 0.72 * delta, 0)) {
+                    character.dir *= -1;
+                }
+                if (distance < 0.78 && character.cooldown <= 0) {
+                    challenge.freezeUntil = now + 1300;
+                    character.cooldown = 7;
+                    this.renderBaldiChallenge("Playtime made you jump rope. You cannot move for a moment.");
+                }
+            } else if (character.type === "principal") {
+                if (distance < 4.2) {
+                    angle = Math.atan2(player.y - character.y, player.x - character.x);
+                    this.moveBaldiActor(character, Math.cos(angle) * 1.05 * delta, Math.sin(angle) * 1.05 * delta);
+                }
+                if (distance < 0.7 && character.cooldown <= 0) {
+                    challenge.slowUntil = now + 1800;
+                    character.cooldown = 5;
+                    this.renderBaldiChallenge("Principal stopped you in the halls. Move slower for a moment.");
+                }
+            } else if (character.type === "bully") {
+                if (distance < 0.92 && character.cooldown <= 0) {
+                    angle = Math.atan2(player.y - character.y, player.x - character.x);
+                    this.moveBaldiPlayer(Math.cos(angle) * 0.46, Math.sin(angle) * 0.46);
+                    character.cooldown = 2.8;
+                    this.renderBaldiChallenge("Bully blocks the hall and shoves you back.");
+                }
+            } else if (character.type === "arts" && challenge.current >= 3) {
+                angle = Math.atan2(player.y - character.y, player.x - character.x);
+                this.moveBaldiActor(character, Math.cos(angle) * 1.28 * delta, Math.sin(angle) * 1.28 * delta);
+                if (distance < 0.7 && character.cooldown <= 0) {
+                    challenge.baldi.speed += 0.08;
+                    character.cooldown = 4;
+                    this.renderBaldiChallenge("Arts and Crafters got jealous. Baldi speeds up.");
+                }
+            } else if (character.type === "sweep") {
+                if (!this.moveBaldiActor(character, character.vx * 2.4 * delta, character.vy * 2.4 * delta)) {
+                    character.vx = Math.random() > 0.5 ? 1 : -1;
+                    character.vy = Math.random() > 0.5 ? 1 : -1;
+                }
+                if (distance < 1.15) {
+                    this.moveBaldiPlayer(character.vx * 3.1 * delta, character.vy * 3.1 * delta);
+                    if (character.cooldown <= 0) {
+                        character.cooldown = 2;
+                        this.renderBaldiChallenge("Gotta Sweep is sweeping you down the hallway.");
+                    }
+                }
+            } else if (character.type === "prize") {
+                if (distance < 5) {
+                    angle = Math.atan2(player.y - character.y, player.x - character.x);
+                    this.moveBaldiActor(character, Math.cos(angle) * 1.45 * delta, Math.sin(angle) * 1.45 * delta);
+                }
+                if (distance < 0.9) {
+                    angle = Math.atan2(player.y - character.y, player.x - character.x);
+                    this.moveBaldiPlayer(Math.cos(angle) * 2.8 * delta, Math.sin(angle) * 2.8 * delta);
+                    if (character.cooldown <= 0) {
+                        character.cooldown = 2;
+                        this.renderBaldiChallenge("1st Prize loves you and is pushing you forward.");
+                    }
+                }
+            } else if (character.type === "cloudy") {
+                character.dir = character.dir || 1;
+                if (!this.moveBaldiActor(character, 0, character.dir * 0.8 * delta)) {
+                    character.dir *= -1;
+                }
+                if (distance < 2.4) {
+                    challenge.blindUntil = now + 900;
+                }
+            } else if (character.type === "beans") {
+                if (distance < 3.2 && character.cooldown <= 0) {
+                    challenge.slowUntil = now + 2600;
+                    character.cooldown = 6;
+                    this.renderBaldiChallenge("Beans spat gum. Your shoes are sticky.");
+                }
+            } else if (character.type === "pomp") {
+                if (distance < 1.2 && character.cooldown <= 0) {
+                    challenge.baldi.x = Math.max(1.5, character.x - 1.4);
+                    challenge.baldi.y = character.y;
+                    character.cooldown = 10;
+                    this.renderBaldiChallenge("Mrs. Pomp called Baldi closer.");
+                }
+            } else if (character.type === "chalkles") {
+                if (distance < 1.6 && character.cooldown <= 0) {
+                    challenge.freezeUntil = now + 700;
+                    character.cooldown = 5;
+                    this.renderBaldiChallenge("Chalkles laughs from the board. You hesitate.");
+                }
+            } else if (character.type === "test") {
+                if (distance < 1.9) {
+                    challenge.blindUntil = now + 1200;
+                    if (character.cooldown <= 0) {
+                        character.cooldown = 4;
+                        this.renderBaldiChallenge("The Test is staring at you. Your vision narrows.");
+                    }
+                }
+            } else if (character.type === "reflex") {
+                if (distance < 1.05 && character.cooldown <= 0) {
+                    challenge.slowUntil = now + 1700;
+                    character.cooldown = 5;
+                    this.renderBaldiChallenge("Dr. Reflex checks your reflexes. Slow down.");
+                }
+            }
         }
     };
 
@@ -2384,12 +2618,7 @@
         var speed = (baldi.speed + challenge.current * 0.12 + challenge.mistakes * 0.22) * delta;
         var nextX = baldi.x + Math.cos(angle) * speed;
         var nextY = baldi.y + Math.sin(angle) * speed;
-        if (!this.isBaldiWall(nextX, baldi.y)) {
-            baldi.x = nextX;
-        }
-        if (!this.isBaldiWall(baldi.x, nextY)) {
-            baldi.y = nextY;
-        }
+        this.moveBaldiActor(baldi, nextX - baldi.x, nextY - baldi.y);
         if (Math.hypot(player.x - baldi.x, player.y - baldi.y) < 0.55) {
             this.loseBaldiChallenge();
         }
@@ -2427,8 +2656,8 @@
             ctx.fillStyle = distance < 1.5 ? "#f7e89a" : distance < 3.5 ? "#e6d072" : "#bca84f";
             ctx.fillRect(column, (height - wallHeight) / 2, 2, wallHeight);
         }
-        this.drawBaldiSprite(ctx, width, height, challenge.baldi.x, challenge.baldi.y, "#ff3434", "BALDI", 1.8);
         this.drawBaldiRunObjects(ctx, width, height);
+        this.drawBaldiScreenEffects(ctx, width, height);
         this.drawBaldiMinimap(ctx, width, height);
     };
 
@@ -2448,13 +2677,32 @@
         return 14;
     };
 
+    View.prototype.hasBaldiLineOfSight = function (x, y) {
+        var challenge = this.baldiChallenge;
+        var dx = x - challenge.player.x;
+        var dy = y - challenge.player.y;
+        var distance = Math.hypot(dx, dy);
+        var steps = Math.max(1, Math.ceil(distance / 0.08));
+        var index;
+        var sampleX;
+        var sampleY;
+        for (index = 1; index < steps; index += 1) {
+            sampleX = challenge.player.x + dx * (index / steps);
+            sampleY = challenge.player.y + dy * (index / steps);
+            if (this.isBaldiWall(sampleX, sampleY)) {
+                return false;
+            }
+        }
+        return true;
+    };
+
     View.prototype.drawBaldiRunObjects = function (ctx, width, height) {
         var challenge = this.baldiChallenge;
-        var objects = [];
+        var objects = [{ x: challenge.baldi.x, y: challenge.baldi.y, color: "#69d44f", label: "Baldi", scale: 1.55, type: "baldi" }];
         var index;
         for (index = 0; index < challenge.notebooks.length; index += 1) {
             if (!challenge.notebooks[index].solved) {
-                objects.push({ x: challenge.notebooks[index].x, y: challenge.notebooks[index].y, color: "#ffe95c", label: "NOTEBOOK", scale: 1.1 });
+                objects.push({ x: challenge.notebooks[index].x, y: challenge.notebooks[index].y, color: "#ffe95c", label: "Notebook", scale: 1.1, type: "notebook" });
             }
         }
         for (index = 0; index < challenge.characters.length; index += 1) {
@@ -2463,18 +2711,19 @@
                 y: challenge.characters[index].y,
                 color: challenge.characters[index].color,
                 label: challenge.characters[index].name,
-                scale: 0.8
+                scale: 0.92,
+                type: challenge.characters[index].type
             });
         }
         objects.sort(function (a, b) {
             return Math.hypot(challenge.player.x - b.x, challenge.player.y - b.y) - Math.hypot(challenge.player.x - a.x, challenge.player.y - a.y);
         });
         for (index = 0; index < objects.length; index += 1) {
-            this.drawBaldiSprite(ctx, width, height, objects[index].x, objects[index].y, objects[index].color, objects[index].label, objects[index].scale);
+            this.drawBaldiSprite(ctx, width, height, objects[index].x, objects[index].y, objects[index].color, objects[index].label, objects[index].scale, objects[index].type);
         }
     };
 
-    View.prototype.drawBaldiSprite = function (ctx, width, height, x, y, color, label, scale) {
+    View.prototype.drawBaldiSprite = function (ctx, width, height, x, y, color, label, scale, type) {
         var challenge = this.baldiChallenge;
         var dx = x - challenge.player.x;
         var dy = y - challenge.player.y;
@@ -2482,6 +2731,7 @@
         var angle = Math.atan2(dy, dx) - challenge.player.angle;
         var size;
         var screenX;
+        var centerY;
         while (angle < -Math.PI) {
             angle += Math.PI * 2;
         }
@@ -2491,19 +2741,178 @@
         if (Math.abs(angle) > 0.72 || distance < 0.15 || distance > 10) {
             return;
         }
+        if (!this.hasBaldiLineOfSight(x, y)) {
+            return;
+        }
         size = Math.min(height * 0.8, (height / distance) * 0.42 * scale);
         screenX = width / 2 + (angle / 0.72) * (width / 2);
+        centerY = height / 2 + size * 0.04;
         ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
-        ctx.fillRect(screenX - size * 0.32, height / 2 + size * 0.38, size * 0.64, size * 0.12);
-        ctx.fillStyle = color;
-        ctx.fillRect(screenX - size * 0.25, height / 2 - size * 0.45, size * 0.5, size * 0.9);
-        ctx.strokeStyle = "#111111";
-        ctx.lineWidth = 3;
-        ctx.strokeRect(screenX - size * 0.25, height / 2 - size * 0.45, size * 0.5, size * 0.9);
+        ctx.fillRect(screenX - size * 0.34, centerY + size * 0.42, size * 0.68, size * 0.1);
+        if (type === "notebook") {
+            this.drawBaldiNotebookSprite(ctx, screenX, centerY, size);
+        } else {
+            this.drawBaldiCharacterSprite(ctx, screenX, centerY, size, color, type);
+        }
         ctx.fillStyle = "#111111";
-        ctx.font = Math.max(10, Math.floor(size * 0.11)) + "px sans-serif";
+        ctx.font = Math.max(10, Math.floor(size * 0.1)) + "px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(label, screenX, height / 2 - size * 0.52);
+        ctx.fillText(label, screenX, centerY - size * 0.58);
+    };
+
+    View.prototype.drawBaldiNotebookSprite = function (ctx, x, y, size) {
+        ctx.fillStyle = "#ffe95c";
+        ctx.fillRect(x - size * 0.28, y - size * 0.36, size * 0.56, size * 0.56);
+        ctx.strokeStyle = "#111111";
+        ctx.lineWidth = Math.max(2, size * 0.035);
+        ctx.strokeRect(x - size * 0.28, y - size * 0.36, size * 0.56, size * 0.56);
+        ctx.fillStyle = "#e24a4a";
+        ctx.fillRect(x - size * 0.22, y - size * 0.28, size * 0.44, size * 0.055);
+        ctx.fillStyle = "#2f6eea";
+        ctx.fillRect(x - size * 0.22, y - size * 0.15, size * 0.34, size * 0.045);
+        ctx.fillRect(x - size * 0.22, y - size * 0.03, size * 0.4, size * 0.045);
+    };
+
+    View.prototype.drawBaldiCharacterSprite = function (ctx, x, y, size, color, type) {
+        ctx.save();
+        ctx.strokeStyle = "#111111";
+        ctx.lineWidth = Math.max(2, size * 0.025);
+        ctx.lineCap = "round";
+        ctx.fillStyle = color;
+
+        if (type === "baldi") {
+            ctx.fillStyle = "#f2d28b";
+            ctx.beginPath();
+            ctx.arc(x, y - size * 0.34, size * 0.16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.strokeStyle = "#2f8f35";
+            ctx.lineWidth = Math.max(3, size * 0.04);
+            ctx.beginPath();
+            ctx.moveTo(x, y - size * 0.18);
+            ctx.lineTo(x, y + size * 0.3);
+            ctx.moveTo(x - size * 0.18, y);
+            ctx.lineTo(x + size * 0.18, y);
+            ctx.moveTo(x, y + size * 0.3);
+            ctx.lineTo(x - size * 0.13, y + size * 0.48);
+            ctx.moveTo(x, y + size * 0.3);
+            ctx.lineTo(x + size * 0.13, y + size * 0.48);
+            ctx.stroke();
+            ctx.strokeStyle = "#111111";
+            ctx.lineWidth = Math.max(2, size * 0.018);
+            ctx.beginPath();
+            ctx.arc(x - size * 0.055, y - size * 0.36, size * 0.014, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.055, y - size * 0.36, size * 0.014, 0, Math.PI * 2);
+            ctx.fillStyle = "#111111";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x, y - size * 0.32, size * 0.065, 0, Math.PI);
+            ctx.stroke();
+        } else if (type === "playtime") {
+            ctx.fillStyle = "#ffd36a";
+            ctx.fillRect(x - size * 0.18, y - size * 0.36, size * 0.36, size * 0.32);
+            ctx.fillStyle = "#7b42ff";
+            ctx.fillRect(x - size * 0.24, y - size * 0.42, size * 0.12, size * 0.45);
+            ctx.fillRect(x + size * 0.12, y - size * 0.42, size * 0.12, size * 0.45);
+            ctx.fillStyle = "#ff4ec7";
+            ctx.fillRect(x - size * 0.2, y - size * 0.04, size * 0.4, size * 0.36);
+        } else if (type === "principal") {
+            ctx.fillStyle = "#3d6ec8";
+            ctx.fillRect(x - size * 0.2, y - size * 0.1, size * 0.4, size * 0.46);
+            ctx.fillStyle = "#f1c27d";
+            ctx.fillRect(x - size * 0.16, y - size * 0.42, size * 0.32, size * 0.3);
+            ctx.fillStyle = "#203b78";
+            ctx.fillRect(x - size * 0.19, y - size * 0.46, size * 0.38, size * 0.08);
+        } else if (type === "sweep") {
+            ctx.fillStyle = "#188a42";
+            ctx.fillRect(x - size * 0.34, y - size * 0.28, size * 0.68, size * 0.5);
+            ctx.strokeRect(x - size * 0.34, y - size * 0.28, size * 0.68, size * 0.5);
+            ctx.strokeStyle = "#eeeeee";
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.24, y - size * 0.2);
+            ctx.lineTo(x - size * 0.24, y + size * 0.16);
+            ctx.moveTo(x, y - size * 0.2);
+            ctx.lineTo(x, y + size * 0.16);
+            ctx.moveTo(x + size * 0.24, y - size * 0.2);
+            ctx.lineTo(x + size * 0.24, y + size * 0.16);
+            ctx.stroke();
+        } else if (type === "prize") {
+            ctx.fillStyle = "#cfd6dd";
+            ctx.fillRect(x - size * 0.24, y - size * 0.42, size * 0.48, size * 0.72);
+            ctx.strokeRect(x - size * 0.24, y - size * 0.42, size * 0.48, size * 0.72);
+            ctx.fillStyle = "#e02828";
+            ctx.beginPath();
+            ctx.arc(x, y - size * 0.46, size * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (type === "cloudy") {
+            ctx.fillStyle = "#dff6ff";
+            ctx.beginPath();
+            ctx.arc(x - size * 0.16, y - size * 0.2, size * 0.16, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.02, y - size * 0.25, size * 0.2, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.2, y - size * 0.18, size * 0.14, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.strokeStyle = "#99d9ff";
+            ctx.beginPath();
+            ctx.moveTo(x - size * 0.28, y + size * 0.04);
+            ctx.lineTo(x + size * 0.28, y + size * 0.16);
+            ctx.stroke();
+        } else if (type === "test") {
+            ctx.fillStyle = "#f8f8f8";
+            ctx.beginPath();
+            ctx.arc(x, y - size * 0.16, size * 0.26, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = "#111111";
+            ctx.beginPath();
+            ctx.arc(x, y - size * 0.16, size * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (type === "filename") {
+            ctx.fillStyle = "#111111";
+            ctx.fillRect(x - size * 0.28, y - size * 0.42, size * 0.56, size * 0.72);
+            ctx.fillStyle = "#eeeeee";
+            ctx.font = Math.max(8, Math.floor(size * 0.11)) + "px monospace";
+            ctx.textAlign = "center";
+            ctx.fillText("NULL", x, y - size * 0.05);
+        } else {
+            ctx.fillRect(x - size * 0.22, y - size * 0.38, size * 0.44, size * 0.66);
+            ctx.strokeRect(x - size * 0.22, y - size * 0.38, size * 0.44, size * 0.66);
+        }
+
+        if (["playtime", "principal", "bully", "arts", "beans", "pomp", "chalkles", "reflex"].indexOf(type) !== -1) {
+            ctx.strokeStyle = "#111111";
+            ctx.lineWidth = Math.max(2, size * 0.022);
+            ctx.strokeRect(x - size * 0.22, y - size * 0.38, size * 0.44, size * 0.66);
+            ctx.fillStyle = "#111111";
+            ctx.beginPath();
+            ctx.arc(x - size * 0.07, y - size * 0.22, size * 0.018, 0, Math.PI * 2);
+            ctx.arc(x + size * 0.07, y - size * 0.22, size * 0.018, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+    };
+
+    View.prototype.drawBaldiScreenEffects = function (ctx, width, height) {
+        var challenge = this.baldiChallenge;
+        var now = Date.now();
+        if (now < challenge.blindUntil) {
+            ctx.fillStyle = "rgba(240, 248, 255, 0.34)";
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = "rgba(0, 0, 0, 0.52)";
+            ctx.fillRect(0, 0, width, height * 0.18);
+            ctx.fillRect(0, height * 0.82, width, height * 0.18);
+            ctx.fillRect(0, 0, width * 0.18, height);
+            ctx.fillRect(width * 0.82, 0, width * 0.18, height);
+        }
+        if (now < challenge.slowUntil) {
+            ctx.fillStyle = "rgba(90, 210, 90, 0.14)";
+            ctx.fillRect(0, height * 0.5, width, height * 0.5);
+        }
+        if (now < challenge.freezeUntil) {
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.72)";
+            ctx.lineWidth = 5;
+            ctx.strokeRect(10, 10, width - 20, height - 20);
+        }
     };
 
     View.prototype.drawBaldiMinimap = function (ctx, width, height) {
@@ -2550,6 +2959,8 @@
         }
         this.baldiChallenge.ended = true;
         this.stopBaldiLoop();
+        this.forceGameAudioMax();
+        this.uiSounds.playReverseGlitch();
         this.startBaldiShutdown();
     };
 
@@ -2564,7 +2975,11 @@
         this.elements.baldiOverlay.classList.remove("hidden");
         this.elements.baldiOverlay.setAttribute("aria-hidden", "false");
         this.elements.baldiOverlay.classList.add("is-shutting-down");
-        this.elements.baldiOverlay.innerHTML = "";
+        this.elements.baldiOverlay.innerHTML =
+            "<div class=\"baldi-reverse-warning\">" +
+            "<strong>UOY THGUAC IDLAB</strong>" +
+            "<span>gnittuhs si egap eht .kcab og t'nac uoy</span>" +
+            "</div>";
         if (this.elements.baldiQuestionPanel) {
             this.elements.baldiQuestionPanel.classList.add("hidden");
         }
@@ -2588,9 +3003,10 @@
         button = document.createElement("button");
         button.type = "button";
         button.className = "baldi-shutdown-button";
-        button.textContent = "!";
+        button.textContent = index % 3 === 0 ? "IDLAB" : index % 3 === 1 ? "KCAB" : "!";
         button.style.left = this.randomPixel(-24, Math.max(24, window.innerWidth - 48)) + "px";
         button.style.top = this.randomPixel(-24, Math.max(24, window.innerHeight - 48)) + "px";
+        button.style.transform = "scaleX(-1) rotate(" + this.randomPixel(-28, 28) + "deg)";
         button.style.animationDelay = (index % 10) * 18 + "ms";
         this.elements.baldiOverlay.appendChild(button);
     };
@@ -2602,8 +3018,8 @@
         document.documentElement.innerHTML =
             "<head><title>Number Clicker shut down</title></head>" +
             "<body style=\"margin:0;background:#000;color:#f22;height:100vh;display:grid;place-items:center;font-family:monospace;text-align:center;\">" +
-            "<main><h1 style=\"font-size:clamp(2rem,8vw,6rem);margin:0 0 16px;\">BALDI CAUGHT YOU</h1>" +
-            "<p style=\"font-size:clamp(1rem,3vw,1.5rem);margin:0;\">The website shut down. Refresh or re-enter to play again.</p></main>" +
+            "<main style=\"transform:scaleX(-1);filter:contrast(1.6);\"><h1 style=\"font-size:clamp(2rem,8vw,6rem);margin:0 0 16px;\">UOY THGUAC IDLAB</h1>" +
+            "<p style=\"font-size:clamp(1rem,3vw,1.5rem);margin:0;\">.niaga yalp ot retne-er ro hserfer .nwod tuhs etisbew ehT</p></main>" +
             "</body>";
     };
 
