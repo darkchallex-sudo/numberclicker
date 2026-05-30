@@ -846,38 +846,65 @@ body {
     position: fixed;
     inset: 0;
     z-index: 30;
-    display: grid;
-    place-items: center;
     padding: 0;
-    color: #121212;
-    background:
-        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.24) 0 2px, transparent 2px 74px),
-        linear-gradient(180deg, #f3e9b8 0 50%, #79b86f 50% 100%);
+    color: #ffffff;
+    background: #050505;
+}
+
+.baldi-overlay.is-shutting-down {
+    overflow: hidden;
+    background: #000000;
+}
+
+.baldi-shutdown-button {
+    position: fixed;
+    z-index: 31;
+    width: 72px;
+    height: 72px;
+    border: 4px solid #ffffff;
+    border-radius: 999px;
+    color: #ffffff;
+    background: radial-gradient(circle at 35% 28%, #ff9f9f, #ff1f1f 46%, #740000 100%);
+    font: inherit;
+    font-size: 2.2rem;
+    font-weight: 900;
+    box-shadow: 0 0 26px rgba(255, 31, 31, 0.8), 0 14px 32px rgba(255, 0, 0, 0.28);
+    animation: baldi-shutdown-pop 180ms ease-out both, baldi-portal-pulse 720ms ease-in-out infinite;
 }
 
 .baldi-room {
+    position: relative;
     width: 100%;
-    min-height: 100vh;
-    display: grid;
-    grid-template-rows: 1fr minmax(150px, 22vh);
+    height: 100vh;
     overflow: hidden;
     border: 0;
     border-radius: 0;
-    background: #f7f0ca;
-    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+    background: #050505;
 }
 
-.baldi-board {
+.baldi-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    background: #050505;
+}
+
+.baldi-hud {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    right: 18px;
     display: grid;
-    align-content: center;
-    gap: 14px;
-    padding: 32px;
+    gap: 8px;
+    max-width: 720px;
+    padding: 16px 18px;
+    border: 3px solid rgba(255, 255, 255, 0.76);
+    border-radius: 18px;
     background:
-        linear-gradient(90deg, transparent 0 49%, rgba(255, 255, 255, 0.12) 49% 51%, transparent 51% 100%),
-        #1c6d38;
-    color: #ffffff;
-    text-align: center;
-    border-bottom: 8px solid #8b5a22;
+        linear-gradient(90deg, rgba(9, 67, 31, 0.92), rgba(20, 99, 44, 0.82)),
+        repeating-linear-gradient(0deg, transparent 0 12px, rgba(255, 255, 255, 0.08) 12px 14px);
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.42);
 }
 
 .baldi-kicker,
@@ -889,14 +916,36 @@ body {
     letter-spacing: 0.12em;
 }
 
-.baldi-board h2 {
+.baldi-hud h2,
+.baldi-question-panel h2 {
     margin: 0;
-    font-size: clamp(2.2rem, 8vw, 4.8rem);
+    font-size: clamp(1.6rem, 5vw, 3.6rem);
     line-height: 0.95;
 }
 
-.baldi-board p {
+.baldi-hud p,
+.baldi-question-panel p {
     margin: 0;
+}
+
+.baldi-question-panel {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: grid;
+    gap: 16px;
+    width: min(520px, calc(100vw - 32px));
+    padding: 24px;
+    border: 5px solid #ffffff;
+    border-radius: 18px;
+    color: #ffffff;
+    text-align: center;
+    background:
+        linear-gradient(90deg, transparent 0 49%, rgba(255, 255, 255, 0.14) 49% 51%, transparent 51% 100%),
+        #1c6d38;
+    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.72);
+    transform: translate(-50%, -50%);
+    z-index: 2;
 }
 
 .baldi-answer-form {
@@ -931,9 +980,8 @@ body {
 }
 
 .baldi-progress {
-    width: min(440px, 100%);
+    width: min(520px, 100%);
     height: 18px;
-    margin: 0 auto;
     overflow: hidden;
     border: 3px solid #ffffff;
     border-radius: 999px;
@@ -944,7 +992,7 @@ body {
     display: block;
     width: 0;
     height: 100%;
-    background: linear-gradient(90deg, #ffe55d, #ff3030);
+    background: linear-gradient(90deg, #ffe55d, #30ff67);
     transition: width 180ms ease;
 }
 
@@ -2712,6 +2760,17 @@ h1 {
     50% {
         transform: scale(1.08);
         filter: brightness(1.24);
+    }
+}
+
+@keyframes baldi-shutdown-pop {
+    0% {
+        opacity: 0;
+        transform: scale(0.12) rotate(-18deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
     }
 }
 
